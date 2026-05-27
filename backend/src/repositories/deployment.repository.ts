@@ -41,6 +41,7 @@ export const updateDeployment = async (id: string, data: DeploymentUpdate) => {
     where id = $${keys.length + 1}
     returning *
   `;
+
   const { rows } = await pool.query(query, [...values, id]);
   return rows[0];
 };
