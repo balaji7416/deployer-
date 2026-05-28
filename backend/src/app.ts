@@ -6,6 +6,7 @@ import { DeploymentUpdate } from "./types/deployment.js";
 import { runCommand } from "./utils/runCommand.js";
 import { pool } from "./db/pool.js";
 import { cloneRepo } from "./services/cloneRepo.js";
+import { detectRuntime } from "./services/detectRuntime.js";
 const app = express();
 
 app.use(express.json());
@@ -30,6 +31,14 @@ app.post("/clone", async (req, res) => {
   if (!repoUrl) return res.status(400).json({ err: "repoUrl is required" });
 
   const result = await cloneRepo(repoUrl);
+  return res.status(200).json({ data: result });
+});
+
+app.post("/detect", async (req, res) => {
+  const { repoUrl } = req.body;
+
+  const clone = await cloneRepo(repoUrl);
+  const result = await detectRuntime(clone.deploymentPath);
   return res.status(200).json({ data: result });
 });
 

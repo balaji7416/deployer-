@@ -5,9 +5,14 @@ export type DeploymentStatus =
   | "started"
   | "running"
   | "failed"
-  | "stoped";
+  | "stopped";
 
-export type RuntimeType = "static" | "node" | "python" | "dockerfile";
+export type RuntimeType =
+  | "static"
+  | "node"
+  | "python"
+  | "dockerfile"
+  | "unknown";
 
 export interface DeploymentRow {
   id: string;
@@ -60,4 +65,12 @@ export interface DeploymentResponse {
 
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RuntimeInfo {
+  type: RuntimeType;
+  startCommand?: string;
+  installCommand?: string;
+  baseImage?: string;
+  exposedPort: number; //container port
 }

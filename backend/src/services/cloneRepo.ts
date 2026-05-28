@@ -22,6 +22,7 @@ export const cloneRepo = async (repoUrl: string) => {
   return {
     success: true,
     deploymentId,
+    deploymentPath,
     repoUrl,
     repoName,
   };
