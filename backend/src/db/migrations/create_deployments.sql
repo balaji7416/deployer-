@@ -12,10 +12,11 @@ create table if not exists deployments (
     container_name text , 
     image_name text, 
 
-    runtime_type text check (runtime_type in ('static','node','python','dockerfile')),
+    runtime_type text check (runtime_type in ('static','node','python','dockerfile','unknown')),
     build_logs text, 
     run_logs text, 
-
+    error_message text, 
+    
     created_at timestamp default now(), 
     updated_at timestamp default now()
 );

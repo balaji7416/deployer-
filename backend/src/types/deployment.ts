@@ -2,7 +2,7 @@ export type DeploymentStatus =
   | "queued"
   | "cloning"
   | "building"
-  | "started"
+  | "starting"
   | "running"
   | "failed"
   | "stopped";
@@ -28,6 +28,7 @@ export interface DeploymentRow {
   runtime_type: RuntimeType | null;
   build_logs: string | null;
   run_logs: string | null;
+  error_message: string | null;
 
   created_at: Date;
   updated_at: Date;
@@ -35,6 +36,7 @@ export interface DeploymentRow {
 
 export interface DeploymentCreate {
   repo_url: string;
+  repo_name: string;
 }
 
 export interface DeploymentUpdate {
@@ -46,6 +48,7 @@ export interface DeploymentUpdate {
   runtime_type?: RuntimeType | null;
   build_logs?: string | null;
   run_logs?: string | null;
+  error_message?: string | null;
 }
 
 export interface DeploymentResponse {
@@ -62,6 +65,7 @@ export interface DeploymentResponse {
   runtimeType: RuntimeType | null;
   buildLogs: string | null;
   runLogs: string | null;
+  errorMessage: string | null;
 
   createdAt: string;
   updatedAt: string;
@@ -73,4 +77,18 @@ export interface RuntimeInfo {
   installCommand?: string;
   baseImage?: string;
   exposedPort: number; //container port
+}
+
+export interface CloneResult {
+  deploymentPath: string;
+}
+
+export interface BuildResult {
+  imageName: string;
+  result: string;
+}
+
+export interface RunResult {
+  containerName: string;
+  result: string;
 }

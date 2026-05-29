@@ -23,7 +23,7 @@ export const runCommand = (command: string, args: string[], cwd?: string) => {
       if (code === 0) {
         resolve(output);
       } else {
-        reject(new Error(`Command failed with exit code ${code}`));
+        reject(new Error(`Command failed with exit code ${code}: ${output}`));
       }
     });
 

@@ -21,11 +21,14 @@ export const getDeploymentById = async (id: string) => {
   return rows[0];
 };
 
-export const createDeployment = async (repo_url: string) => {
+export const createDeployment = async (
+  repo_url: string,
+  repo_name: string | null,
+) => {
   const query = `
-        insert into deployments (repo_url) values ($1) returning *
+        insert into deployments (repo_url, repo_name) values ($1, $2) returning *
     `;
-  const { rows } = await pool.query(query, [repo_url]);
+  const { rows } = await pool.query(query, [repo_url, repo_name]);
   return rows[0];
 };
 
