@@ -1,6 +1,7 @@
 import { cloneRepo } from "./cloneRepo.js";
 import { detectRuntime } from "./detectRuntime.js";
 import { generateDockerfile } from "./generateDockerfile.js";
+import { generateDockerignore } from "./genereateDockerignore.js";
 import { buildImage } from "./buildImage.js";
 import { getPort, freePort } from "../utils/portAllocator.js";
 import { runContainer } from "./runContainer.js";
@@ -23,12 +24,12 @@ export const orchestrateDeployment = async (
 
     await updateDeployment(deployment.id, { status: "cloning" });
     const clone = await cloneRepo(repoUrl, deployment.id);
-
     const runtime = await detectRuntime(clone.deploymentPath);
     if (runtime.type === "unknown") throw new Error("Unsupported runtime");
     await updateDeployment(deployment.id, { runtime_type: runtime.type });
 
     await generateDockerfile(clone.deploymentPath, runtime);
+    await generateDockerignore(clone.deploymentPath);
 
     await updateDeployment(deployment.id, { status: "building" });
     const build = await buildImage(deployment.id, clone.deploymentPath);
@@ -36,6 +37,7 @@ export const orchestrateDeployment = async (
     await updateDeployment(deployment.id, {
       status: "starting",
       image_name: build.imageName,
+      build_logs: build.result,
     });
     const hostPort = await getPort();
     const containerPort = runtime.exposedPort || 3000;
@@ -51,6 +53,7 @@ export const orchestrateDeployment = async (
       status: "running",
       port: hostPort,
       container_name: run.containerName,
+      run_logs: run.result,
     });
 
     return result;

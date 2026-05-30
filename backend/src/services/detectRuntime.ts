@@ -74,11 +74,51 @@ const detectStatic = async (workSpacePath: string): Promise<RuntimeInfo> => {
   };
 };
 
+const isSPA = async (workspacePath: string): Promise<boolean> => {
+  const packageJson = JSON.parse(
+    await fs.readFile(path.join(workspacePath, "package.json"), "utf-8"),
+  );
+  const deps = {
+    ...packageJson?.dependencies,
+    ...packageJson?.devDependencies,
+  };
+  const frontendFrameworks = [
+    "react",
+    "vue",
+    "@angular/core",
+    "svelte",
+    "solid-js",
+  ];
+
+  return frontendFrameworks.some((f) => deps[f]);
+};
+
+const detectSPA = async (workspacePath: string): Promise<RuntimeInfo> => {
+  const packageJson = JSON.parse(
+    await fs.readFile(path.join(workspacePath, "package.json"), "utf-8"),
+  );
+  const deps = {
+    ...packageJson?.dependencies,
+    ...packageJson?.devDependencies,
+  };
+  let outputDir = "dist";
+  if (deps["react-scripts"]) outputDir = "build"; //create-react-app
+
+  return {
+    type: "spa",
+    installCommand: "npm install",
+    buildCommand: "npm run build",
+    outputDir,
+    exposedPort: 80,
+  };
+};
+
 const detectRuntime = async (workspacePath: string): Promise<RuntimeInfo> => {
   if (await fileExists(workspacePath, "Dockerfile")) {
     return detectDockerfile(workspacePath);
   }
   if (await fileExists(workspacePath, "package.json")) {
+    if (await isSPA(workspacePath)) return detectSPA(workspacePath);
     return detectNode(workspacePath);
   }
   if (await fileExists(workspacePath, "requirements.txt")) {

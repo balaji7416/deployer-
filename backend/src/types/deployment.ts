@@ -12,6 +12,7 @@ export type RuntimeType =
   | "node"
   | "python"
   | "dockerfile"
+  | "spa"
   | "unknown";
 
 export interface DeploymentRow {
@@ -75,6 +76,8 @@ export interface RuntimeInfo {
   type: RuntimeType;
   startCommand?: string;
   installCommand?: string;
+  buildCommand?: string;
+  outputDir?: string;
   baseImage?: string;
   exposedPort: number; //container port
 }

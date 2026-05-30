@@ -49,6 +49,14 @@ const generateDockerfile = async (
         EXPOSED_PORT: String(runtime.exposedPort) || "80",
       });
       break;
+    case "spa":
+      dockerfile = await fillTemplate("spa.tpl", {
+        INSTALL_COMMAND: runtime.installCommand || "npm install",
+        BUILD_COMMAND: runtime.buildCommand || "npm run build",
+        OUTPUT_DIR: runtime.outputDir || "dist",
+        EXPOSED_PORT: String(runtime.exposedPort) || "80",
+      });
+      break;
     case "dockerfile":
       console.log("using user provided dockerfile");
       return; // no need to generate dockerfile if user has provided dockerfile
