@@ -20,11 +20,11 @@ export const cloneRepo = async (
   const deploymentPath = path.join(process.cwd(), "deployments", deploymentId);
 
   // for local testing: copy local project instead of cloning
-  const local_react_proj = path.resolve("..", "frameIt_frontend");
-  await fs.cp(local_react_proj, deploymentPath, { recursive: true });
+  // const local_react_proj = path.resolve("..", "frameIt_frontend");
+  // await fs.cp(local_react_proj, deploymentPath, { recursive: true });
 
-  // await fs.mkdir(deploymentPath);
-  // await runCommand("git", ["clone", repoUrl, "."], deploymentPath);
+  await fs.mkdir(deploymentPath);
+  await runCommand("git", ["clone", repoUrl, "."], deploymentPath);
 
   return {
     deploymentPath,

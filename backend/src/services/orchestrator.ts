@@ -23,16 +23,31 @@ export const orchestrateDeployment = async (
     if (!deployment) throw new Error("Failed to create deployment");
 
     await updateDeployment(deployment.id, { status: "cloning" });
+
+    console.log("cloning repository...");
     const clone = await cloneRepo(repoUrl, deployment.id);
+    console.log("---------- cloned repository ----------");
+
+    console.log("detecting runtime...");
     const runtime = await detectRuntime(clone.deploymentPath);
     if (runtime.type === "unknown") throw new Error("Unsupported runtime");
+    console.log("detected runtime: ", runtime.type);
+
     await updateDeployment(deployment.id, { runtime_type: runtime.type });
 
+    console.log("generating dockerfile...");
     await generateDockerfile(clone.deploymentPath, runtime);
+    console.log("------ generated docker file ---------");
+
+    console.log("generating dockerignore...");
     await generateDockerignore(clone.deploymentPath);
+    console.log("------ generated dockerignore ---------");
 
     await updateDeployment(deployment.id, { status: "building" });
+
+    console.log("building image...");
     const build = await buildImage(deployment.id, clone.deploymentPath);
+    console.log("----------- build successful ---------");
 
     await updateDeployment(deployment.id, {
       status: "starting",
@@ -42,12 +57,14 @@ export const orchestrateDeployment = async (
     const hostPort = await getPort();
     const containerPort = runtime.exposedPort || 3000;
 
+    console.log("starting container...");
     const run = await runContainer(
       deployment.id,
       clone.deploymentPath,
       hostPort,
       containerPort,
     );
+    console.log("----------- container started ---------");
 
     const result = await updateDeployment(deployment.id, {
       status: "running",

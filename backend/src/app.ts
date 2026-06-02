@@ -3,9 +3,12 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { testDB } from "./db/pool.js";
-import { errorMiddleware } from "./middlewares/error.middleware.js";
-import deploymentRouter from "./routes/deployment.routes.js";
 import { ApiError } from "./utils/apiError.js";
+import { reconcile } from "./services/reconcile.js";
+
+import { errorMiddleware } from "./middlewares/error.middleware.js";
+
+import deploymentRouter from "./routes/deployment.routes.js";
 
 const app = express();
 
@@ -14,7 +17,7 @@ app.use(express.json());
 app.use("/api/deployments", deploymentRouter);
 
 app.use((req, res, next) => {
-  next(new ApiError(404, `route ${req.originalUrl} not found`));
+  next(new ApiError(404, `route ${req.method} ${req.url} not found`));
 });
 
 app.use(errorMiddleware);
@@ -23,6 +26,13 @@ try {
   await testDB();
 } catch (e) {
   console.log("error connecting to the database: ", e);
+  process.exit(1);
+}
+
+try {
+  await reconcile();
+} catch (e) {
+  console.log("error in reconciliation");
   process.exit(1);
 }
 

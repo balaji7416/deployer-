@@ -53,7 +53,7 @@ export const getDeploymentLogs = asyncHandler(
 );
 
 export const deploy = asyncHandler(async (req: Request, res: Response) => {
-  const repoUrl: string = req.body;
+  const repoUrl: string = req.body.repoUrl;
   const depl: DeploymentRow = await orchestrateDeployment(repoUrl);
   const response = toDeploymentResponse(depl);
   return res
