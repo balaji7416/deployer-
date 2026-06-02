@@ -2,31 +2,29 @@ import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
 
-import { runCommand } from "./utils/runCommand.js";
-import { pool } from "./db/pool.js";
-
-import { orchestrateDeployment } from "./services/orchestrator.js";
+import { testDB } from "./db/pool.js";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
+import deploymentRouter from "./routes/deployment.routes.js";
+import { ApiError } from "./utils/apiError.js";
 
 const app = express();
 
 app.use(express.json());
-app.get("/", (req, res) => {
-  res.status(200).json({ message: "backend working..." });
+
+app.use("/api/deployments", deploymentRouter);
+
+app.use((req, res, next) => {
+  next(new ApiError(404, `route ${req.originalUrl} not found`));
 });
 
-app.get("/deployments", async (req, res) => {
-  const { rows } = await pool.query("select * from deployments");
-  res.status(200).json({ data: rows });
-});
+app.use(errorMiddleware);
 
-app.post("/deploy", async (req, res) => {
-  const { repoUrl } = req.body;
-  if (!repoUrl) return res.status(400).json({ err: "repo url is required" });
-  const result = await orchestrateDeployment(repoUrl);
-  return res.status(200).json({ data: result });
-});
-
-await pool.query("SELECT 1");
+try {
+  await testDB();
+} catch (e) {
+  console.log("error connecting to the database: ", e);
+  process.exit(1);
+}
 
 app.listen(3000, () => {
   console.log("server listening on port 3000");

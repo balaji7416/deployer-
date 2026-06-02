@@ -21,6 +21,15 @@ export const getDeploymentById = async (id: string) => {
   return rows[0];
 };
 
+export const getDeploymentLogs = async (id: string) => {
+  const query = `
+    select build_logs from deployments
+    where id = $1
+  `;
+  const { rows } = await pool.query(query, [id]);
+  return rows[0];
+};
+
 export const createDeployment = async (
   repo_url: string,
   repo_name: string | null,
@@ -47,4 +56,12 @@ export const updateDeployment = async (id: string, data: DeploymentUpdate) => {
 
   const { rows } = await pool.query(query, [...values, id]);
   return rows[0];
+};
+
+export const deploymentRepo = {
+  getAllDeployments,
+  getDeploymentById,
+  getDeploymentLogs,
+  createDeployment,
+  updateDeployment,
 };
