@@ -32,7 +32,7 @@ try {
 try {
   await reconcile();
 } catch (e) {
-  console.log("error in reconciliation");
+  console.log("error in reconciliation:", e);
   process.exit(1);
 }
 

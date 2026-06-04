@@ -23,7 +23,20 @@ export const reconcile = async () => {
     { silent: true },
   );
 
+  const runningContainerData: string = await runCommand(
+    "docker",
+    ["ps", "--format", "{{.Names}}"],
+    {
+      silent: true,
+    },
+  );
+
   const containerNames: string[] = containerData
+    .split("\n")
+    .map((name) => name.trim())
+    .filter((name) => name.startsWith("container-"));
+
+  const runningContainerNames: string[] = runningContainerData
     .split("\n")
     .map((name) => name.trim())
     .filter((name) => name.startsWith("container-"));
@@ -37,8 +50,11 @@ export const reconcile = async () => {
     const ExistsInContainerNames = containerNames.includes(
       deployment.container_name || "",
     );
+    const ExistsInRunningContainers = runningContainerNames.includes(
+      deployment.container_name || "",
+    );
     //1. db says running but container not found => mark as stopped in db
-    if (deployment.status === "running" && !ExistsInContainerNames) {
+    if (deployment.status === "running" && !ExistsInRunningContainers) {
       console.log(
         `container ${deployment.container_name} not found in docker, marking as stopped`,
       );
@@ -46,7 +62,9 @@ export const reconcile = async () => {
         status: "stopped",
         error_message: "container not found (possible crash)",
       });
-      await stopContainer(deployment.id);
+
+      //await stopContainer(deployment.id);
+      //container shouldn't be reomved to support restart this specific deployment again
     }
     //2. db says cloning/building/starting but container not found => mark as failed
     else if (
