@@ -1,0 +1,7 @@
+node_modules/
+.env
+testfile.ts
+deployments/
+frameIt_frontend
+nginx/conf.d/*.conf
+!nginx/conf.d/.gitkeep
