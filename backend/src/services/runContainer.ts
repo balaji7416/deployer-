@@ -3,25 +3,18 @@ import { RunResult } from "../types/deployment.js";
 
 export const runContainer = async (
   deploymentId: string,
-  deploymentPath: string,
-  hostPort: number,
-  containerPort: number,
 ): Promise<RunResult> => {
   const containerName = `container-${deploymentId}`;
   const imageName = `deployer-${deploymentId}`;
-  const result = await runCommand(
-    "docker",
-    [
-      "run",
-      "-d",
-      "-p",
-      `${hostPort}:${containerPort}`,
-      "--name",
-      containerName,
-      imageName,
-    ],
-    deploymentPath,
-  );
+  const result = await runCommand("docker", [
+    "run",
+    "-d",
+    "--network",
+    "deploy-net",
+    "--name",
+    containerName,
+    imageName,
+  ]);
   console.log("Run container result: ", result);
   return {
     containerName,

@@ -5,10 +5,13 @@ dotenv.config();
 import { testDB } from "./db/pool.js";
 import { ApiError } from "./utils/apiError.js";
 import { reconcile } from "./services/reconcile.js";
+import { startNginx } from "./services/nginx/startNginx.js";
+import { createDockerNet } from "./services/createDockerNet.js";
 
 import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 import deploymentRouter from "./routes/deployment.routes.js";
+import { create } from "node:domain";
 
 const app = express();
 
@@ -22,6 +25,7 @@ app.use((req, res, next) => {
 
 app.use(errorMiddleware);
 
+//starting requirements sequence
 try {
   await testDB();
 } catch (e) {
@@ -33,6 +37,19 @@ try {
   await reconcile();
 } catch (e) {
   console.log("error in reconciliation:", e);
+  process.exit(1);
+}
+
+try {
+  await createDockerNet();
+} catch (e) {
+  console.log("error in creating docker network: ", e);
+  process.exit(1);
+}
+try {
+  await startNginx();
+} catch (e) {
+  console.log("error in starting nginx: ", e);
   process.exit(1);
 }
 

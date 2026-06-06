@@ -13,3 +13,11 @@
 -- ALTER TABLE deployments 
 -- ADD CONSTRAINT deployments_runtime_type_check 
 -- CHECK (runtime_type IN ('static', 'node', 'python', 'spa', 'dockerfile', 'unknown'));
+
+-- alter table deployments
+-- drop column port; 
+
+-- alter table deployments
+-- add column route text unique;
+
+delete from deployments;

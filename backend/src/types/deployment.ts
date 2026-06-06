@@ -22,7 +22,7 @@ export interface DeploymentRow {
   repo_name: string | null;
 
   status: DeploymentStatus;
-  port: number | null;
+  route: string | null;
   container_name: string | null;
   image_name: string | null;
 
@@ -43,7 +43,8 @@ export interface DeploymentCreate {
 export interface DeploymentUpdate {
   repo_name?: string | null;
   status?: DeploymentStatus;
-  port?: number | null;
+  //port?: number | null;
+  route?: string | null;
   container_name?: string | null;
   image_name?: string | null;
   runtime_type?: RuntimeType | null;
@@ -59,7 +60,8 @@ export interface DeploymentResponse {
   repoName: string | null;
 
   status: DeploymentStatus;
-  port: number | null;
+  // port: number | null;
+  route: string | null;
   containerName: string | null;
   imageName: string | null;
 
