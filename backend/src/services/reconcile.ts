@@ -1,3 +1,6 @@
+import path from "path";
+import fs from "fs/promises";
+
 import { DeploymentRow } from "../types/deployment.js";
 
 import { runCommand } from "../utils/runCommand.js";
@@ -6,6 +9,7 @@ import {
   updateDeployment,
 } from "../repositories/deployment.repository.js";
 import { stopContainer } from "./stopContainer.js";
+import { reloadNginx } from "./nginx/reloadNginx.js";
 
 const ACTIVE_STATUSES = ["cloning", "building", "starting", "running"];
 
@@ -82,7 +86,19 @@ export const reconcile = async () => {
     //3. db says running and container found => do nothing
   }
 
-  //4. remove containers that are not in db but are in containerNames
+  //4. remove stale nginx configs (configs that don't have a matching deployment)
+  const confDir = path.join(process.cwd(), "nginx", "conf.d");
+  const confFiles = await fs.readdir(confDir);
+
+  for (const file of confFiles) {
+    const route = file.replace(".conf", "");
+    if (!deployments.some((dpl) => dpl.route === route)) {
+      await fs.unlink(path.join(confDir, file));
+      console.log(`Removed stale nginx config: ${file}`);
+    }
+  }
+
+  //5. remove containers that are not in db but are in containerNames
   const activeNames = activeDeployments.map((dpl) => dpl.container_name);
   for (const name of containerNames) {
     if (!activeNames.includes(name)) {
@@ -91,4 +107,9 @@ export const reconcile = async () => {
       await runCommand("docker", ["rm", name]);
     }
   }
+
+  //6. reload nginx
+  await reloadNginx();
+
+  console.log("recilation complete");
 };

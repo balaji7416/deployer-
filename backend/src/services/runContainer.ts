@@ -6,15 +6,22 @@ export const runContainer = async (
 ): Promise<RunResult> => {
   const containerName = `container-${deploymentId}`;
   const imageName = `deployer-${deploymentId}`;
-  const result = await runCommand("docker", [
-    "run",
-    "-d",
-    "--network",
-    "deploy-net",
-    "--name",
-    containerName,
-    imageName,
-  ]);
+  const result = await runCommand(
+    "docker",
+    [
+      "run",
+      "-d",
+      "--network",
+      "deploy-net",
+      "--name",
+      containerName,
+      imageName,
+    ],
+    {
+      stage: "run",
+      deploymentId,
+    },
+  );
   console.log("Run container result: ", result);
   return {
     containerName,

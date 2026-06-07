@@ -10,8 +10,12 @@ import {
   deploymentRepo,
   updateDeployment,
 } from "../repositories/deployment.repository.js";
-import { orchestrateDeployment } from "../services/orchestrator.js";
+import {
+  orchestrateDeployment,
+  startDeployment,
+} from "../services/orchestrator.js";
 import { stopContainer } from "../services/stopContainer.js";
+import { logEmitter } from "../utils/logEmmiter.js";
 
 export const getAllDeployments = asyncHandler(
   async (req: Request, res: Response) => {
@@ -54,11 +58,9 @@ export const getDeploymentLogs = asyncHandler(
 
 export const deploy = asyncHandler(async (req: Request, res: Response) => {
   const repoUrl: string = req.body.repoUrl;
-  const depl: DeploymentRow = await orchestrateDeployment(repoUrl);
-  const response = toDeploymentResponse(depl);
-  return res
-    .status(200)
-    .json(new ApiResponse(200, "deployed project", response));
+
+  const depl: { deploymentId: string } = await startDeployment(repoUrl);
+  return res.status(200).json(new ApiResponse(200, "deployment started", depl));
 });
 
 export const stopDeployment = asyncHandler(
@@ -73,3 +75,32 @@ export const stopDeployment = asyncHandler(
     return res.status(200).json(new ApiResponse(200, "stopped deployment", {}));
   },
 );
+
+export const streamLogs = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params as { id: string };
+
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+
+  res.write(": Connected\n\n");
+
+  const onLog = (event: any) => {
+    if (event.deploymentId !== id) return;
+    res.write(`data: ${JSON.stringify(event)}\n\n`);
+
+    if (event.stage == "complete" || event.stage == "failed") {
+      res.write("data: [END]\n\n");
+      res.end();
+      logEmitter.off("log", onLog);
+    }
+  };
+
+  logEmitter.on("log", onLog);
+
+  req.on("close", () => {
+    logEmitter.off("log", onLog);
+  });
+});

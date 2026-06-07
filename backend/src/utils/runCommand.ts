@@ -1,6 +1,10 @@
 import { spawn } from "child_process";
+import { logEmitter } from "./logEmmiter.js";
 
-type RunOptions = string | { cwd?: string; silent: boolean };
+type RunOptions =
+  | string
+  | { cwd?: string; silent?: boolean; deploymentId?: string; stage?: string };
+
 export const runCommand = (
   command: string,
   args: string[],
@@ -15,7 +19,7 @@ export const runCommand = (
       cwd = options;
     } else if (options) {
       cwd = options.cwd;
-      silent = options.silent;
+      silent = options?.silent || false;
     }
     const child = spawn(command, args, {
       cwd,
@@ -25,11 +29,33 @@ export const runCommand = (
     child.stdout.on("data", (data) => {
       if (!silent) process.stdout.write(data);
       output += data;
+
+      const text = data.toString();
+
+      if (typeof options !== "string") {
+        if (options?.deploymentId) {
+          logEmitter.emit("log", {
+            deploymentId: options.deploymentId,
+            message: text,
+            stage: options.stage || "unknown",
+          });
+        }
+      }
     });
 
     child.stderr.on("data", (data) => {
       if (!silent) process.stderr.write(data);
       output += data;
+      const text = data.toString();
+      if (typeof options !== "string") {
+        if (options?.deploymentId) {
+          logEmitter.emit("log", {
+            deploymentId: options.deploymentId,
+            message: text,
+            stage: options.stage,
+          });
+        }
+      }
     });
 
     child.on("close", (code) => {
