@@ -91,6 +91,7 @@ export const reconcile = async () => {
   const confFiles = await fs.readdir(confDir);
 
   for (const file of confFiles) {
+    if (file === ".gitkeep") continue;
     const route = file.replace(".conf", "");
     if (!deployments.some((dpl) => dpl.route === route)) {
       await fs.unlink(path.join(confDir, file));
@@ -103,8 +104,7 @@ export const reconcile = async () => {
   for (const name of containerNames) {
     if (!activeNames.includes(name)) {
       console.log(`container ${name} record not found in db, removing it...`);
-      await runCommand("docker", ["stop", name]);
-      await runCommand("docker", ["rm", name]);
+      await runCommand("docker", ["rm", "-f", name]);
     }
   }
 

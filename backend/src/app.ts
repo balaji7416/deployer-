@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { testDB } from "./db/pool.js";
+import { prepareDB } from "./db/prepareDB.js";
+
 import { ApiError } from "./utils/apiError.js";
 import { reconcile } from "./services/reconcile.js";
 import { startNginx } from "./services/nginx/startNginx.js";
@@ -26,6 +28,20 @@ app.use((req, res, next) => {
 app.use(errorMiddleware);
 
 //starting requirements sequence
+
+try {
+  await createDockerNet();
+} catch (e) {
+  console.log("error in creating docker network: ", e);
+  process.exit(1);
+}
+
+try {
+  await prepareDB();
+} catch (e) {
+  console.log("error setting docker postgres container: ", e);
+}
+
 try {
   await testDB();
 } catch (e) {
@@ -40,12 +56,6 @@ try {
   process.exit(1);
 }
 
-try {
-  await createDockerNet();
-} catch (e) {
-  console.log("error in creating docker network: ", e);
-  process.exit(1);
-}
 try {
   await startNginx();
 } catch (e) {
