@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -13,11 +14,11 @@ import { createDockerNet } from "./services/createDockerNet.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 import deploymentRouter from "./routes/deployment.routes.js";
-import { create } from "node:domain";
 
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 app.use("/api/deployments", deploymentRouter);
 

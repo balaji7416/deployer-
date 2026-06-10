@@ -165,10 +165,20 @@ export const orchestrateDeployment = async (
 
     logEmitter.emit("log", {
       deploymentId: deployment.id,
+      stage: "info",
+      message: `
+        {
+          "deploymentId": "${deployment.id}",
+          "route": "${nginx.route}"
+          "url": "http://localhost/${nginx.route}"
+        }
+      `,
+    });
+    logEmitter.emit("log", {
+      deploymentId: deployment.id,
       stage: "complete",
       message: "Deployment finished successfully",
     });
-
     return result;
   } catch (err) {
     let result;

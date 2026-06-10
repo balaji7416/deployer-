@@ -17,7 +17,20 @@
 -- alter table deployments
 -- drop column port; 
 
+
+-- -- delete from deployments;
+
+-- alter table deployments
+-- drop column port;
+
 -- alter table deployments
 -- add column route text unique;
 
-delete from deployments;
+
+SELECT
+    column_name,
+    data_type,
+    is_nullable
+FROM information_schema.columns
+WHERE table_name = 'deployments';
+
