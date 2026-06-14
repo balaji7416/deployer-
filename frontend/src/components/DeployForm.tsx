@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "./ui/card";
 
 function DeployForm({
   onDeploy,
@@ -16,28 +19,35 @@ function DeployForm({
   };
 
   return (
-    <div className="flex items-center justify-center py-16 bg-indigo-900">
-      <form onSubmit={handleSubmit} className="w-full max-w-xl">
-        <h2 className="text-gray-400 text-sm mb-2">Repository URL</h2>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="https://github.com/user/repo.git"
-            value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
-            className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 font-mono text-sm"
-            disabled={loading}
-          />
-          <button
+    <Card className="bg-neutral-900 p-5 my-4 border border-neutral-800">
+      <CardContent className="p-0">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col items-center justify-center gap-4"
+        >
+          {/* Input field with label above */}
+          <div className="w-full flex flex-col items-center justify-center">
+            <label className="text-sm text-neutral-400 block mb-2">
+              Repository URL
+            </label>
+            <Input
+              placeholder="https://github.com/user/repo.git"
+              value={repoUrl}
+              onChange={(e) => setRepoUrl(e.target.value)}
+              className="text-neutral-200 h-11 w-full max-w-md"
+            />
+          </div>
+          {/* Button at same level as input */}
+          <Button
             type="submit"
             disabled={loading || !repoUrl.trim()}
-            className="px-6 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium transition-colors"
+            className="cursor-pointer active:scale-[0.99] bg-blue-400 h-11 px-6 w-full max-w-md"
           >
-            {loading ? "Deploying..." : "Deploy"}
-          </button>
-        </div>
-      </form>
-    </div>
+            {loading ? "Deploying..." : "Deploy Project"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 

@@ -15,7 +15,7 @@ export const useDeploy = (): DeployResponse => {
     setLoading(true);
     try {
       const res = await api.post("/deployments", { repoUrl });
-      setDeploymentId(res.data.data.deploymentId); // ← nested in data.data
+      setDeploymentId(res.data.data.deploymentId); //  nested in data.data
     } catch (e) {
       console.error("Failed to deploy:", e);
       throw e;

@@ -10,12 +10,8 @@ function DeployPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <div>
-        <DeployFrom onDeploy={deploy} loading={loading} />
-      </div>
-      <div className="flex-1 m-1 h-full">
-        <LogTerminal logs={logs} done={done} />
-      </div>
+      <DeployFrom onDeploy={deploy} loading={loading} />
+      <LogTerminal logs={logs} done={done} />
     </div>
   );
 }
