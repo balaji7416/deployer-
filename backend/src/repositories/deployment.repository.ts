@@ -1,14 +1,22 @@
 import { pool } from "../db/pool.js";
-import type {
-  DeploymentCreate,
-  DeploymentUpdate,
-} from "../types/deployment.js";
+import type { DeploymentCreate, DeploymentUpdate } from "../types/index.js";
 
 export const getAllDeployments = async () => {
   const query = `
         select * from deployments
+        order by created_at desc
     `;
   const { rows } = await pool.query(query);
+  return rows;
+};
+
+export const getUserDeployments = async (userId: string) => {
+  const query = `
+        select * from deployments
+        where user_id = $1
+        order by created_at desc
+  `;
+  const { rows } = await pool.query(query, [userId]);
   return rows;
 };
 
@@ -33,11 +41,12 @@ export const getDeploymentLogs = async (id: string) => {
 export const createDeployment = async (
   repo_url: string,
   repo_name: string | null,
+  user_id: string,
 ) => {
   const query = `
-        insert into deployments (repo_url, repo_name) values ($1, $2) returning *
+        insert into deployments (repo_url, repo_name, user_id) values ($1, $2, $3) returning *
     `;
-  const { rows } = await pool.query(query, [repo_url, repo_name]);
+  const { rows } = await pool.query(query, [repo_url, repo_name, user_id]);
   return rows[0];
 };
 
@@ -60,6 +69,7 @@ export const updateDeployment = async (id: string, data: DeploymentUpdate) => {
 
 export const deploymentRepo = {
   getAllDeployments,
+  getUserDeployments,
   getDeploymentById,
   getDeploymentLogs,
   createDeployment,

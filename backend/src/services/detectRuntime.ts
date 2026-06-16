@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import type { RuntimeType, RuntimeInfo } from "../types/deployment.js";
+import type { RuntimeType, RuntimeInfo } from "../types/index.js";
 
 const fileExists = async (
   filePath: string,

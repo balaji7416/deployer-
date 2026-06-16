@@ -10,7 +10,7 @@ import { reloadNginx } from "./nginx/reloadNginx.js";
 import { getPort, freePort } from "../utils/portAllocator.js";
 import { logEmitter } from "../utils/logEmmiter.js";
 
-import type { DeploymentRow } from "../types/deployment.js";
+import type { DeploymentRow } from "../types/index.js";
 
 import {
   updateDeployment,
@@ -199,9 +199,13 @@ export const orchestrateDeployment = async (
   }
 };
 
-export const startDeployment = async (repoUrl: string) => {
+export const startDeployment = async (repoUrl: string, userId: string) => {
   const repoName = repoUrl.split("/").pop()?.replace(".git", "") || null;
-  const deployment: DeploymentRow = await createDeployment(repoUrl, repoName);
+  const deployment: DeploymentRow = await createDeployment(
+    repoUrl,
+    repoName,
+    userId,
+  );
 
   if (!deployment) throw new Error("Failed to create deployment");
   orchestrateDeployment(deployment);

@@ -18,7 +18,7 @@
 -- drop column port; 
 
 
--- -- delete from deployments;
+-- delete from deployments;
 
 -- alter table deployments
 -- drop column port;
@@ -26,11 +26,13 @@
 -- alter table deployments
 -- add column route text unique;
 
+-- alter table deployments
+-- add column user_id uuid references users(id);
 
-SELECT
-    column_name,
-    data_type,
-    is_nullable
-FROM information_schema.columns
-WHERE table_name = 'deployments';
+-- SELECT
+--     column_name,
+--     data_type,
+--     is_nullable
+-- FROM information_schema.columns
+-- WHERE table_name = 'deployments';
 

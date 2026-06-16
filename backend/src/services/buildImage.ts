@@ -1,5 +1,5 @@
 import { runCommand } from "../utils/runCommand.js";
-import { BuildResult } from "../types/deployment.js";
+import { BuildResult } from "../types/index.js";
 export const buildImage = async (
   deploymentId: string,
   deploymentPath: string,

@@ -1,5 +1,5 @@
 import { runCommand } from "../utils/runCommand.js";
-import { RunResult } from "../types/deployment.js";
+import { RunResult } from "../types/index.js";
 
 export const runContainer = async (
   deploymentId: string,

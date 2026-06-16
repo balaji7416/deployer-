@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { authMiddleware } from "../middlewares/auth.middleware.js";
 import {
   getAllDeployments,
   getDeploymentById,
@@ -11,11 +12,11 @@ import {
 
 const router = Router();
 
-router.get("/", getAllDeployments);
-router.get("/:id", getDeploymentById);
-router.get("/:id/logs", getDeploymentLogs);
-router.post("/", deploy);
-router.post("/:id/stop", stopDeployment);
-router.get("/:id/logs/stream", streamLogs);
+router.get("/", authMiddleware, getAllDeployments);
+router.get("/:id", authMiddleware, getDeploymentById);
+router.get("/:id/logs", authMiddleware, getDeploymentLogs);
+router.post("/", authMiddleware, deploy);
+router.post("/:id/stop", authMiddleware, stopDeployment);
+router.get("/:id/logs/stream", authMiddleware, streamLogs);
 
 export default router;

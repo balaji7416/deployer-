@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 
-import { DeploymentRow } from "../types/deployment.js";
+import { DeploymentRow } from "../types/index.js";
 
 import { runCommand } from "../utils/runCommand.js";
 import {
@@ -91,9 +91,9 @@ export const reconcile = async () => {
   const confFiles = await fs.readdir(confDir);
 
   for (const file of confFiles) {
-    if (file === ".gitkeep") continue;
+    if (file === ".gitkeep" || file === "default.conf") continue;
     const route = file.replace(".conf", "");
-    if (!deployments.some((dpl) => dpl.route === route)) {
+    if (!containerNames.includes(route)) {
       await fs.unlink(path.join(confDir, file));
       console.log(`Removed stale nginx config: ${file}`);
     }
@@ -107,9 +107,6 @@ export const reconcile = async () => {
       await runCommand("docker", ["rm", "-f", name]);
     }
   }
-
-  //6. reload nginx
-  await reloadNginx();
 
   console.log("recilation complete");
 };

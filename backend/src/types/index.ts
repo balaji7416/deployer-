@@ -17,6 +17,7 @@ export type RuntimeType =
 
 export interface DeploymentRow {
   id: string;
+  user_id: string;
 
   repo_url: string;
   repo_name: string | null;
@@ -36,6 +37,7 @@ export interface DeploymentRow {
 }
 
 export interface DeploymentCreate {
+  user_id: string;
   repo_url: string;
   repo_name: string;
 }
@@ -55,6 +57,7 @@ export interface DeploymentUpdate {
 
 export interface DeploymentResponse {
   id: string;
+  userId: string;
 
   repoUrl: string;
   repoName: string | null;
@@ -96,4 +99,13 @@ export interface BuildResult {
 export interface RunResult {
   containerName: string;
   result: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  password: string;
+  created_at: Date;
+  updated_at: Date;
 }

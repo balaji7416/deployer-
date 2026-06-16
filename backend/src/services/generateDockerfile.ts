@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { RuntimeInfo } from "../types/deployment.js";
+import { RuntimeInfo } from "../types/index.js";
 
 const TEMPLATES_DIR =
   path.resolve("dockerfiles") || path.join(process.cwd(), "src", "dockerfiles");

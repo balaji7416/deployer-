@@ -2,7 +2,7 @@ import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
 import { runCommand } from "../utils/runCommand.js";
-import { CloneResult } from "../types/deployment.js";
+import { CloneResult } from "../types/index.js";
 
 export const cloneRepo = async (
   repoUrl: string,

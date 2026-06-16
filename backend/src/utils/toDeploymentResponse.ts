@@ -1,10 +1,11 @@
-import { DeploymentResponse, DeploymentRow } from "../types/deployment.js";
+import { DeploymentResponse, DeploymentRow } from "../types/index.js";
 
 export const toDeploymentResponse = (
   deployment: DeploymentRow,
 ): DeploymentResponse => {
   return {
     id: deployment.id,
+    userId: deployment.user_id,
     repoUrl: deployment.repo_url,
     repoName: deployment.repo_name,
     status: deployment.status,

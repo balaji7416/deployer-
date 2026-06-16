@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import type { DeploymentResponse, DeploymentRow } from "../types/deployment.js";
+import type { DeploymentResponse, DeploymentRow } from "../types/index.js";
 
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
@@ -20,7 +20,7 @@ import { logEmitter } from "../utils/logEmmiter.js";
 export const getAllDeployments = asyncHandler(
   async (req: Request, res: Response) => {
     const deployments: DeploymentRow[] =
-      await deploymentRepo.getAllDeployments();
+      await deploymentRepo.getUserDeployments(req.user?.id as string);
     const response: DeploymentResponse[] = deployments.map((depl) =>
       toDeploymentResponse(depl),
     );
@@ -59,7 +59,10 @@ export const getDeploymentLogs = asyncHandler(
 export const deploy = asyncHandler(async (req: Request, res: Response) => {
   const repoUrl: string = req.body.repoUrl;
 
-  const depl: { deploymentId: string } = await startDeployment(repoUrl);
+  const depl: { deploymentId: string } = await startDeployment(
+    repoUrl,
+    req.user?.id as string,
+  );
   return res.status(200).json(new ApiResponse(200, "deployment started", depl));
 });
 
