@@ -5,24 +5,44 @@ interface DeployResponse {
   deploymentId: string | null;
   deploy: (repoUrl: string) => Promise<void>;
   loading: boolean;
+  error: string | null;
+  isDeploying: boolean;
+  updateIsDeploying: (state: boolean) => void;
 }
 
 export const useDeploy = (): DeployResponse => {
   const [loading, setLoading] = useState(false);
   const [deploymentId, setDeploymentId] = useState<string | null>(null);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const deploy = async (repoUrl: string) => {
-    setLoading(true);
     try {
+      setLoading(true);
+      setIsDeploying(true);
       const res = await api.post("/deployments", { repoUrl });
       setDeploymentId(res.data.data.deploymentId); //  nested in data.data
     } catch (e) {
       console.error("Failed to deploy:", e);
-      throw e;
+      const errMsg =
+        e instanceof Error ? e.message : "depoyment failed for unknown reason";
+      setError(errMsg);
+      setIsDeploying(false); // on error deployment stops
     } finally {
       setLoading(false);
     }
   };
 
-  return { deploymentId, deploy, loading };
+  const updateIsDeploying = (state: boolean) => {
+    setIsDeploying(state);
+  };
+
+  return {
+    deploymentId,
+    deploy,
+    loading,
+    error,
+    updateIsDeploying,
+    isDeploying,
+  };
 };

@@ -6,9 +6,11 @@ import { Card, CardContent } from "./ui/card";
 function DeployForm({
   onDeploy,
   loading,
+  isDeploying,
 }: {
   onDeploy: (repoUrl: string) => void;
   loading: boolean;
+  isDeploying: boolean;
 }) {
   const [repoUrl, setRepoUrl] = useState("");
 
@@ -40,10 +42,14 @@ function DeployForm({
           {/* Button at same level as input */}
           <Button
             type="submit"
-            disabled={loading || !repoUrl.trim()}
+            disabled={isDeploying || !repoUrl.trim()}
             className="cursor-pointer active:scale-[0.99] bg-blue-400 h-11 px-6 w-full max-w-md"
           >
-            {loading ? "Deploying..." : "Deploy Project"}
+            {loading
+              ? "Deploying..."
+              : isDeploying
+                ? "Deployment in progress"
+                : "Deploy Project"}
           </Button>
         </form>
       </CardContent>
