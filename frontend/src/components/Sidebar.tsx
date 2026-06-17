@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import { X, Menu, User, ChevronUp, ChevronDown } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/context/auth/useAuth";
 
 const links = [
   { name: "Dashboard", path: "/" },
@@ -13,7 +14,7 @@ const links = [
 function Sidebar() {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-
+  const { user } = useAuth();
   const isMobile = useIsMobile();
 
   // Auto-close on mobile when navigating
@@ -90,13 +91,17 @@ function Sidebar() {
             "transition-all duration-300 ease-in-out",
             "cursor-pointer",
           )}
-          onClick={() => setProfileOpen((prev) => !prev)}
+          onClick={() => {
+            setProfileOpen((prev) => !prev);
+          }}
         >
           <div className="flex items-center justify-center gap-2">
             <div className="w-10 h-10 rounded-full p-1 bg-neutral-600 flex items-center justify-center">
               <User size={26} />
             </div>
-            <p className="text-sm text-neutral-400 mt-2">User</p>
+            <p className="text-sm text-neutral-400 mt-2">
+              {user?.username || "user not found"}
+            </p>
           </div>
           <div className="rounded-xl p-2 text-neutral-500 active:bg-neutral-700">
             {profileOpen ? <ChevronDown /> : <ChevronUp />}

@@ -12,6 +12,7 @@ import clsx from "clsx";
 import type { DeploymentResponse } from "@/lib/types";
 import { formatTime } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Deployments() {
   const {
@@ -23,6 +24,8 @@ function Deployments() {
     loading: boolean;
     error: string | null;
   } = useDeployments();
+
+  const navigate = useNavigate();
 
   if (!loading && deployments.length === 0)
     return (
@@ -69,7 +72,7 @@ function Deployments() {
               className={clsx(
                 "h-[300px] bg-neutral-900 border border-neutral-700 shadow-neutral-600 shadow-sm",
                 "flex flex-col p-1",
-                "text-neutral-200 hover:scale-[1.01]",
+                "text-neutral-200 hover:scale-[1.001]",
               )}
               key={depl.id}
             >
@@ -96,7 +99,7 @@ function Deployments() {
                 <div className="flex justify-between">
                   <span>URL</span>
                   <a
-                    href={`http://localhost/${depl.route}`}
+                    href={`http://localhost/${depl.route}/`}
                     className="truncate text-blue-500 text-xs"
                     target="_blank"
                   >
@@ -106,7 +109,7 @@ function Deployments() {
 
                 <div>
                   <span>Logs</span>
-                  <p className="text-xs font-mono text-green-500 border border-neutral-800 p-2 rounded-md">
+                  <div className="text-xs font-mono text-green-500 border border-neutral-800 p-2 rounded-md">
                     {preview}
 
                     {depl.buildLogs && (
@@ -117,11 +120,29 @@ function Deployments() {
                         </Link>
                       </div>
                     )}
-                  </p>
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter className="shrink-0 bg-neutral-900 h-10 text-xs">
+              <CardFooter className="shrink-0 bg-neutral-900 h-10 text-xs flex items-center justify-between">
                 <p>deployed {formatTime(depl.createdAt)}</p>
+                <button
+                  className={clsx(
+                    "bg-blue-600 text-white px-2 py-1 rounded-md ",
+                    "shadow-sm shadow-white",
+                    "hover:scale-[1.01] hover:bg-blue-500/80 active:scale-[0.99]",
+                    "transition-all duration-300 ease-in-out",
+                  )}
+                  onClick={() => {
+                    navigate("/deploy", {
+                      state: {
+                        repoUrl: depl.repoUrl,
+                        isRedeploy: true,
+                      },
+                    });
+                  }}
+                >
+                  Re Deploy
+                </button>
               </CardFooter>
             </Card>
           );

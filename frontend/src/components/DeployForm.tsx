@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "./ui/card";
@@ -7,12 +7,23 @@ function DeployForm({
   onDeploy,
   loading,
   isDeploying,
+  state,
 }: {
   onDeploy: (repoUrl: string) => void;
   loading: boolean;
   isDeploying: boolean;
+  state?: { repoUrl: string; isRedeploy: boolean };
 }) {
-  const [repoUrl, setRepoUrl] = useState("");
+  const [repoUrl, setRepoUrl] = useState(() => {
+    if (state?.repoUrl) return state.repoUrl;
+    return "";
+  });
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    //console.log(state);
+    if (state?.isRedeploy) btnRef.current?.click();
+  }, [state?.isRedeploy]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,6 +53,7 @@ function DeployForm({
           {/* Button at same level as input */}
           <Button
             type="submit"
+            ref={btnRef}
             disabled={isDeploying || !repoUrl.trim()}
             className="cursor-pointer active:scale-[0.99] bg-blue-400 h-11 px-6 w-full max-w-md"
           >

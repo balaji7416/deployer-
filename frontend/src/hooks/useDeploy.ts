@@ -24,6 +24,7 @@ export const useDeploy = (): DeployResponse => {
       setDeploymentId(res.data.data.deploymentId); //  nested in data.data
     } catch (e) {
       console.error("Failed to deploy:", e);
+
       const errMsg =
         e instanceof Error ? e.message : "depoyment failed for unknown reason";
       setError(errMsg);

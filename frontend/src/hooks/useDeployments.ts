@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../utils/api";
 import type { DeploymentResponse } from "@/lib/types";
+import axios from "axios";
 
 export function useDeployments() {
   const [loading, setLoading] = useState(false);
@@ -14,11 +15,18 @@ export function useDeployments() {
         const res = await api.get("/deployments");
         setDeployments(res.data.data);
       } catch (error: unknown) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch deployments";
-        setError(message);
+        console.log("failed to fetch deployments: ", error);
+
+        let errMsg;
+        if (axios.isAxiosError(error) && error.response) {
+          errMsg = error.response.data.message;
+        }
+        if (!errMsg)
+          errMsg =
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch deployments";
+        setError(errMsg);
       } finally {
         setLoading(false);
       }
