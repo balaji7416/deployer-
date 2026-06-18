@@ -77,3 +77,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .json(new ApiResponse(200, "user logged in", { ...user, token }));
 });
+
+export const checkAuth = asyncHandler(async (req: Request, res: Response) => {
+  const { user } = req;
+  return res.status(200).json(new ApiResponse(200, "user logged in", user));
+});

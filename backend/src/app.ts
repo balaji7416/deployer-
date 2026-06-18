@@ -49,12 +49,22 @@ try {
   console.log("error setting docker postgres container: ", e);
 }
 
-try {
-  await testDB();
-} catch (e) {
-  console.log("error connecting to the database: ", e);
-  process.exit(1);
-}
+// connect to database
+const connectToDB = async () => {
+  for (let i = 0; i < 10; i++) {
+    try {
+      await testDB();
+      return;
+    } catch (e) {
+      console.log("failed to connect to database, retrying...");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+  console.log("failed to connect to database, exiting...");
+  throw new Error("failed to connect to database");
+};
+
+await connectToDB();
 
 try {
   await reconcile();

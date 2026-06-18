@@ -17,6 +17,6 @@ router.get("/:id", authMiddleware, getDeploymentById);
 router.get("/:id/logs", authMiddleware, getDeploymentLogs);
 router.post("/", authMiddleware, deploy);
 router.post("/:id/stop", authMiddleware, stopDeployment);
-router.get("/:id/logs/stream", authMiddleware, streamLogs);
+router.get("/:id/logs/stream", streamLogs);
 
 export default router;
