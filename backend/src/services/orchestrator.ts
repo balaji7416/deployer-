@@ -149,13 +149,15 @@ export const orchestrateDeployment = async (
     const result = await updateDeployment(deployment.id, {
       route: nginx.route,
     });
+
     //console.log("reloading nginx...");
     logEmitter.emit("log", {
       deploymentId: deployment.id,
       stage: "info",
       message: "reloading nginx...",
     });
-    await reloadNginx();
+    console.log("deployment route: ", result.route);
+    await reloadNginx(result.route);
     logEmitter.emit("log", {
       deploymentId: deployment.id,
       stage: "info",

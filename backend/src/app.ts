@@ -79,7 +79,7 @@ try {
   console.log("error in starting nginx: ", e);
   process.exit(1);
 }
-await reloadNginx();
+await reloadNginx(null);
 
 app.listen(3000, () => {
   console.log("server listening on port 3000");
