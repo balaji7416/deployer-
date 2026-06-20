@@ -17,186 +17,185 @@ import {
   createDeployment,
 } from "../repositories/deployment.repository.js";
 
+// ─── Logging Helpers ──────────────────────────────────────────────────────────
+
+type LogStage =
+  | "INIT"
+  | "CLONE"
+  | "DETECT"
+  | "DOCKERFILE"
+  | "DOCKERIGNORE"
+  | "BUILD"
+  | "DEPLOY"
+  | "NETWORK"
+  | "COMPLETE"
+  | "ERROR";
+
+const STAGE_ICONS: Record<LogStage, string> = {
+  INIT: "🚀",
+  CLONE: "📦",
+  DETECT: "🔍",
+  DOCKERFILE: "🐳",
+  DOCKERIGNORE: "📄",
+  BUILD: "🔨",
+  DEPLOY: "▶️",
+  NETWORK: "🌐",
+  COMPLETE: "✅",
+  ERROR: "❌",
+};
+
+/**
+ * Create a timestamped, structured log line in the style of professional
+ * deployment platforms (Vercel, Railway, Render, etc.).
+ */
+const formatLog = (stage: LogStage, message: string): string => {
+  const ts = new Date().toISOString();
+  return `[${ts}] ${STAGE_ICONS[stage]}  [${stage}]  ${message}`;
+};
+
+/**
+ * Emit a log entry to the SSE stream and append it to the in-memory log buffer.
+ */
+const emitLog = (
+  deploymentId: string,
+  stage: LogStage,
+  message: string,
+  logBuffer: string[],
+  emitStage: string = "info",
+): void => {
+  const line = formatLog(stage, message);
+  logBuffer.push(line);
+  logEmitter.emit("log", {
+    deploymentId,
+    stage: emitStage,
+    message: line,
+  });
+};
+
+// ─── Orchestration ────────────────────────────────────────────────────────────
+
 export const orchestrateDeployment = async (
   deployment: DeploymentRow,
 ): Promise<DeploymentRow> => {
+  const logBuffer: string[] = [];
+  const id = deployment.id;
+
   try {
-    await updateDeployment(deployment.id, { status: "cloning" });
+    // ── 1. Clone ────────────────────────────────────────────────────────────
+    await updateDeployment(id, { status: "cloning" });
 
-    // console.log("cloning repository...");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "cloning repository...",
-    });
+    emitLog(id, "CLONE", "Cloning repository...", logBuffer);
+    const clone = await cloneRepo(deployment.repo_url, id);
+    emitLog(id, "CLONE", "Repository cloned successfully.", logBuffer);
 
-    const clone = await cloneRepo(deployment.repo_url, deployment.id);
-    //console.log("---------- cloned repository ----------");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "---------- cloned repository ----------",
-    });
-
-    //console.log("detecting runtime...");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "detecting runtime...",
-    });
+    // ── 2. Detect Runtime ───────────────────────────────────────────────────
+    emitLog(id, "DETECT", "Detecting project runtime...", logBuffer);
     const runtime = await detectRuntime(clone.deploymentPath);
     if (runtime.type === "unknown") throw new Error("Unsupported runtime");
-    //console.log("detected runtime: ", runtime.type);
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: `detected runtime: ${runtime.type}`,
-    });
+    emitLog(id, "DETECT", `Runtime detected: ${runtime.type}`, logBuffer);
 
-    await updateDeployment(deployment.id, { runtime_type: runtime.type });
+    await updateDeployment(id, { runtime_type: runtime.type });
 
-    //console.log("generating dockerfile...");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "generating dockerfile...",
-    });
-
+    // ── 3. Generate Dockerfile ──────────────────────────────────────────────
+    emitLog(id, "DOCKERFILE", "Generating Dockerfile...", logBuffer);
     await generateDockerfile(clone.deploymentPath, runtime);
-    //console.log("------ generated docker file ---------");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "------ generated docker file ---------",
-    });
+    emitLog(id, "DOCKERFILE", "Dockerfile generated.", logBuffer);
 
-    //console.log("generating dockerignore...");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "generating dockerignore...",
-    });
+    // ── 4. Generate .dockerignore ───────────────────────────────────────────
+    emitLog(id, "DOCKERIGNORE", "Generating .dockerignore...", logBuffer);
     await generateDockerignore(clone.deploymentPath);
-    //console.log("------ generated dockerignore ---------");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "------ generated dockerignore ---------",
-    });
+    emitLog(id, "DOCKERIGNORE", ".dockerignore generated.", logBuffer);
 
-    await updateDeployment(deployment.id, { status: "building" });
+    // ── 5. Build Image ──────────────────────────────────────────────────────
+    await updateDeployment(id, { status: "building" });
 
-    //console.log("building image...");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "building image...",
-    });
-    const build = await buildImage(deployment.id, clone.deploymentPath);
-    //console.log("----------- build successful ---------");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "----------- build successful ---------",
-    });
+    emitLog(id, "BUILD", "Building Docker image...", logBuffer);
+    const build = await buildImage(id, clone.deploymentPath);
 
-    await updateDeployment(deployment.id, {
+    // Capture build output into the log buffer
+    if (build.result) {
+      const buildLines = build.result.split("\n").filter((l) => l.trim());
+      for (const line of buildLines) {
+        logBuffer.push(formatLog("BUILD", line.trim()));
+      }
+    }
+    emitLog(id, "BUILD", "Docker image built successfully.", logBuffer);
+
+    // ── 6. Start Container ──────────────────────────────────────────────────
+    await updateDeployment(id, {
       status: "starting",
       image_name: build.imageName,
-      build_logs: build.result,
     });
+
     const hostPort = await getPort();
     const containerPort = runtime.exposedPort || 3000;
 
-    //console.log("starting container...");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "starting deployment...",
-    });
-    const run = await runContainer(deployment.id);
-    //console.log("----------- container started ---------");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "----------- deployement running ---------",
-    });
+    emitLog(id, "DEPLOY", "Starting container...", logBuffer);
+    const run = await runContainer(id);
 
-    await updateDeployment(deployment.id, {
+    // Capture run output into the log buffer
+    if (run.result) {
+      const runLines = run.result.split("\n").filter((l) => l.trim());
+      for (const line of runLines) {
+        logBuffer.push(formatLog("DEPLOY", line.trim()));
+      }
+    }
+    emitLog(id, "DEPLOY", "Container started successfully.", logBuffer);
+
+    await updateDeployment(id, {
       status: "running",
-      // port: hostPort,
       container_name: run.containerName,
-      run_logs: run.result,
     });
 
-    //console.log("generating nginx config...");
-    logEmitter.emit("log", {
-      stage: "info",
-      message: "generating nginx config...",
-    });
+    // ── 7. Configure Nginx ──────────────────────────────────────────────────
+    emitLog(id, "NETWORK", "Generating Nginx configuration...", logBuffer);
     const nginx = await generateNginxConfig(
-      deployment.id,
+      id,
       deployment.container_name || run.containerName,
       containerPort,
     );
-    //console.log("------- nginx config generated -------");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "------- nginx config generated -------",
-    });
+    emitLog(id, "NETWORK", "Nginx configuration generated.", logBuffer);
 
-    const result = await updateDeployment(deployment.id, {
+    await updateDeployment(id, {
       route: nginx.route,
     });
 
-    //console.log("reloading nginx...");
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "reloading nginx...",
-    });
-    console.log("deployment route: ", result.route);
-    await reloadNginx(result.route);
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: "------- nginx reloaded -------",
-    });
-    //console.log("----- nginx reloaded -----");
+    emitLog(id, "NETWORK", "Reloading Nginx...", logBuffer);
+    await reloadNginx(nginx.route);
+    emitLog(id, "NETWORK", "Nginx reloaded successfully.", logBuffer);
+
+    // ── 8. Finalise ─────────────────────────────────────────────────────────
+    emitLog(id, "COMPLETE", `Deployment live at: /${nginx.route}`, logBuffer);
 
     logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "info",
-      message: `
-        {
-          "deploymentId": "${deployment.id}",
-          "route": "${nginx.route}"
-          "url": "http://localhost/${nginx.route}"
-        }
-      `,
-    });
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
+      deploymentId: id,
       stage: "complete",
-      message: "Deployment finished successfully",
+      message: formatLog(
+        "COMPLETE",
+        `Deployment finished — route: /${nginx.route}`,
+      ),
     });
+
+    // Persist the full deployment log
+    const result = await updateDeployment(id, {
+      logs: logBuffer.join("\n"),
+    });
+
     return result;
   } catch (err) {
-    let result;
-    if (deployment)
-      result = await updateDeployment(deployment.id, {
-        status: "failed",
-        error_message:
-          err instanceof Error ? err.message : "Unknown Error occurred",
-      });
-    console.log("deployement Error for deployment: ", deployment?.id, err);
+    const errorMsg =
+      err instanceof Error ? err.message : "Unknown error occurred";
 
-    logEmitter.emit("log", {
-      deploymentId: deployment.id,
-      stage: "failed",
-      message: err instanceof Error ? err.message : "Deployment failed",
+    emitLog(id, "ERROR", `Deployment failed: ${errorMsg}`, logBuffer, "failed");
+
+    // Persist logs even on failure
+    const result = await updateDeployment(id, {
+      status: "failed",
+      error_message: errorMsg,
+      logs: logBuffer.join("\n"),
     });
+
+    console.error(`[deployer] Deployment ${id} failed:`, err);
     return result;
   }
 };

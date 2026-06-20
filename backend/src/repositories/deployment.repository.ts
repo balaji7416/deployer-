@@ -31,7 +31,7 @@ export const getDeploymentById = async (id: string) => {
 
 export const getDeploymentLogs = async (id: string) => {
   const query = `
-    select build_logs from deployments
+    select logs from deployments
     where id = $1
   `;
   const { rows } = await pool.query(query, [id]);

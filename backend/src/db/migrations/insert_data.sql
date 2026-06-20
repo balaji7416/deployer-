@@ -36,3 +36,14 @@
 -- FROM information_schema.columns
 -- WHERE table_name = 'deployments';
 
+
+-- alter table deployments
+-- drop column build_logs;
+
+-- alter table deployments
+-- add column logs text;
+
+-- alter table deployments
+-- drop column run_logs;
+
+delete from deployments; 

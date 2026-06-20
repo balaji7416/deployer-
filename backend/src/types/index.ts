@@ -28,8 +28,7 @@ export interface DeploymentRow {
   image_name: string | null;
 
   runtime_type: RuntimeType | null;
-  build_logs: string | null;
-  run_logs: string | null;
+  logs: string | null;
   error_message: string | null;
 
   created_at: Date;
@@ -50,8 +49,7 @@ export interface DeploymentUpdate {
   container_name?: string | null;
   image_name?: string | null;
   runtime_type?: RuntimeType | null;
-  build_logs?: string | null;
-  run_logs?: string | null;
+  logs?: string | null;
   error_message?: string | null;
 }
 
@@ -69,8 +67,7 @@ export interface DeploymentResponse {
   imageName: string | null;
 
   runtimeType: RuntimeType | null;
-  buildLogs: string | null;
-  runLogs: string | null;
+  logs: string | null;
   errorMessage: string | null;
 
   createdAt: string;
