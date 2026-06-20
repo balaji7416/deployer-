@@ -63,7 +63,7 @@ function Deployments() {
       {!loading &&
         deployments &&
         deployments.map((depl) => {
-          const logs = depl.buildLogs;
+          const logs = depl.logs;
           let preview = logs?.split("\n").slice(0, 2).join("\n");
           preview = !preview ? "no logs" : preview;
 
@@ -72,9 +72,10 @@ function Deployments() {
               className={clsx(
                 "h-[300px] bg-neutral-900 border border-neutral-700 shadow-neutral-600 shadow-sm",
                 "flex flex-col p-1",
-                "text-neutral-200 hover:scale-[1.001]",
+                "text-neutral-200 hover:scale-[1.005]",
               )}
               key={depl.id}
+              onDoubleClick={() => navigate(`/deployment/${depl.id}`)}
             >
               <CardHeader className="shrink-0 bg-neutral-800 p-2 rounded-md">
                 <CardTitle>{depl.repoName}</CardTitle>
@@ -112,10 +113,14 @@ function Deployments() {
                   <div className="text-xs font-mono text-green-500 border border-neutral-800 p-2 rounded-md">
                     {preview}
 
-                    {depl.buildLogs && (
+                    {depl.logs && (
                       <div>
                         <span>...</span>
-                        <Link to="" className="text-xs text-blue-600 mx-2">
+                        <Link
+                          to={`/deployment/${depl.id}`}
+                          relative="path"
+                          className="text-xs text-blue-600 mx-2"
+                        >
                           view more
                         </Link>
                       </div>

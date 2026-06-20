@@ -35,5 +35,12 @@ export function useDeployments() {
     fetchDeployments();
   }, []);
 
-  return { deployments, loading, error };
+  const fetchDeployment = async (
+    deploymentId: string,
+  ): Promise<DeploymentResponse> => {
+    const res = await api.get(`/deployments/${deploymentId}`);
+    return res.data.data;
+  };
+
+  return { deployments, loading, error, fetchDeployment };
 }

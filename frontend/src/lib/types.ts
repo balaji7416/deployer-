@@ -28,8 +28,9 @@ export interface DeploymentResponse {
   imageName: string | null;
 
   runtimeType: RuntimeType | null;
-  buildLogs: string | null;
-  runLogs: string | null;
+  // buildLogs: string | null;
+  // runLogs: string | null;
+  logs: string | null;
   errorMessage: string | null;
 
   createdAt: string;

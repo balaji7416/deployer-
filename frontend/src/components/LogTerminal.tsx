@@ -9,8 +9,8 @@ function LogTerminal({ logs, done }: { logs: string[]; done: boolean }) {
   }, [logs]);
 
   return (
-    <Card className="flex flex-1 bg-neutral-900 min-h-0">
-      <CardContent className="flex-1 min-h-0">
+    <Card className="flex flex-1 bg-neutral-900  h-full">
+      <CardContent className="flex-1 min-h-0 p-3">
         <div className="bg-black  text-green-400 font-mono text-sm p-4  h-full overflow-auto rounded-xl">
           {logs.length === 0 && !done && (
             <span className="animate-pulse"> Start Deploying ...</span>
