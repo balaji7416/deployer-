@@ -9,10 +9,10 @@ function DeployForm({
   isDeploying,
   state,
 }: {
-  onDeploy: (repoUrl: string) => void;
+  onDeploy: (repoUrl: string, id?: string) => void;
   loading: boolean;
   isDeploying: boolean;
-  state?: { repoUrl: string; isRedeploy: boolean };
+  state?: { repoUrl: string; isRedeploy: boolean; id?: string };
 }) {
   const [repoUrl, setRepoUrl] = useState(() => {
     if (state?.repoUrl) return state.repoUrl;
@@ -28,7 +28,7 @@ function DeployForm({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!repoUrl.trim()) return;
-    onDeploy(repoUrl);
+    else onDeploy(repoUrl, state?.id);
   };
 
   return (

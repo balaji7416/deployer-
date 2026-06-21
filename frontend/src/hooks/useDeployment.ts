@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "../utils/api";
 import type { DeploymentResponse } from "@/lib/types";
 import axios from "axios";
@@ -35,12 +35,12 @@ export function useDeployments() {
     fetchDeployments();
   }, []);
 
-  const fetchDeployment = async (
-    deploymentId: string,
-  ): Promise<DeploymentResponse> => {
-    const res = await api.get(`/deployments/${deploymentId}`);
-    return res.data.data;
-  };
-
+  const fetchDeployment = useCallback(
+    async (deploymentId: string): Promise<DeploymentResponse> => {
+      const res = await api.get(`/deployments/${deploymentId}`);
+      return res.data.data;
+    },
+    [],
+  );
   return { deployments, loading, error, fetchDeployment };
 }

@@ -3,7 +3,7 @@ import { useState } from "react";
 
 interface DeployResponse {
   deploymentId: string | null;
-  deploy: (repoUrl: string) => Promise<void>;
+  deploy: (repoUrl: string, deplId?: string) => Promise<void>;
   loading: boolean;
   error: string | null;
   isDeploying: boolean;
@@ -16,11 +16,16 @@ export const useDeploy = (): DeployResponse => {
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const deploy = async (repoUrl: string) => {
+  const deploy = async (repoUrl: string, deplId?: string) => {
     try {
       setLoading(true);
       setIsDeploying(true);
-      const res = await api.post("/deployments", { repoUrl });
+      // Reset deploymentId so that even if the API returns the same ID
+      // (as in redeploy), the state change null → id triggers useLogStream
+      setDeploymentId(null);
+      let res;
+      if (deplId) res = await api.post(`/deployments/${deplId}/redeploy`);
+      else res = await api.post("/deployments", { repoUrl });
       setDeploymentId(res.data.data.deploymentId); //  nested in data.data
     } catch (e) {
       console.error("Failed to deploy:", e);
@@ -45,5 +50,30 @@ export const useDeploy = (): DeployResponse => {
     error,
     updateIsDeploying,
     isDeploying,
+  };
+};
+
+export const useRedeploy = () => {
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const reDeploy = async (deploymentId: string) => {
+    try {
+      setError(null);
+      setIsDeploying(true);
+      await api.post(`/deployments/${deploymentId}/redeploy`);
+    } catch (e) {
+      console.error("Failed to deploy:", e);
+      const errMsg =
+        e instanceof Error ? e.message : "depoyment failed for unknown reason";
+      setError(errMsg);
+      setIsDeploying(false); // on error deployment stops
+    }
+  };
+
+  return {
+    reDeploy,
+    isDeploying,
+    error,
   };
 };

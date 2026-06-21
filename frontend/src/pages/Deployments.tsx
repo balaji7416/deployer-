@@ -1,4 +1,4 @@
-import { useDeployments } from "@/hooks/useDeployments";
+import { useDeployments } from "@/hooks/useDeployment";
 import {
   Card,
   CardAction,
@@ -52,7 +52,7 @@ function Deployments() {
         Array.from({ length: 5 }).map((_, i) => (
           <Card
             className={clsx(
-              "h-[300px] bg-neutral-900 border border-neutral-700 shadow-neutral-600 shadow-sm",
+              "h-75 bg-neutral-900 border border-neutral-700 shadow-neutral-600 shadow-sm",
               "flex flex-col p-1",
               "animate-pulse bg-neutral-700",
               "text-neutral-200 hover:scale-[1.01]",
@@ -70,12 +70,12 @@ function Deployments() {
           return (
             <Card
               className={clsx(
-                "h-[300px] bg-neutral-900 border border-neutral-700 shadow-neutral-600 shadow-sm",
+                "h-75 bg-neutral-900 border border-neutral-700 shadow-neutral-600 shadow-sm",
                 "flex flex-col p-1",
                 "text-neutral-200 hover:scale-[1.005]",
               )}
               key={depl.id}
-              onDoubleClick={() => navigate(`/deployment/${depl.id}`)}
+              onClick={() => navigate(`/deployment/${depl.id}`)}
             >
               <CardHeader className="shrink-0 bg-neutral-800 p-2 rounded-md">
                 <CardTitle>{depl.repoName}</CardTitle>
@@ -130,24 +130,6 @@ function Deployments() {
               </CardContent>
               <CardFooter className="shrink-0 bg-neutral-900 h-10 text-xs flex items-center justify-between">
                 <p>deployed {formatTime(depl.createdAt)}</p>
-                <button
-                  className={clsx(
-                    "bg-blue-600 text-white px-2 py-1 rounded-md ",
-                    "shadow-sm shadow-white",
-                    "hover:scale-[1.01] hover:bg-blue-500/80 active:scale-[0.99]",
-                    "transition-all duration-300 ease-in-out",
-                  )}
-                  onClick={() => {
-                    navigate("/deploy", {
-                      state: {
-                        repoUrl: depl.repoUrl,
-                        isRedeploy: true,
-                      },
-                    });
-                  }}
-                >
-                  Re Deploy
-                </button>
               </CardFooter>
             </Card>
           );

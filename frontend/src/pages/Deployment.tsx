@@ -1,6 +1,6 @@
 import LogTerminal from "@/components/LogTerminal";
-import { useParams } from "react-router-dom";
-import { useDeployments } from "@/hooks/useDeployments";
+import { useParams, useNavigate } from "react-router-dom";
+import { useDeployments } from "@/hooks/useDeployment";
 import type { DeploymentResponse } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { formatTime } from "@/lib/utils";
@@ -11,13 +11,15 @@ function Deployment() {
   const { fetchDeployment } = useDeployments();
   const [deployment, setDeployment] = useState<DeploymentResponse | null>(null);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchDepl = async () => {
       const depl = await fetchDeployment(id);
       setDeployment(depl);
     };
     fetchDepl();
-  }, [id]);
+  }, [id, fetchDeployment]);
 
   if (!deployment) {
     return (
@@ -34,6 +36,7 @@ function Deployment() {
         <h1 className="text-2xl font-bold text-neutral-200">
           {deployment.repoName}
         </h1>
+
         <span
           className={clsx(
             "px-3 py-1 rounded-full text-sm font-medium",
@@ -46,7 +49,45 @@ function Deployment() {
           {deployment.status}
         </span>
       </div>
-
+      {/*Actions Grid*/}
+      <div className="shrink-0 flex items-center justify-evenly gap-2 md:gap-5 bg-neutral-900 border-b border-neutral-700 p-4">
+        <button
+          className={clsx(
+            "flex-1 bg-green-600/30 text-green-400 text-xs md:text-sm",
+            "px-3 py-2 rounded-md",
+            "hover:bg-green-600/50 active:scale-[0.98]",
+          )}
+          onClick={() => {
+            navigate("/deploy", {
+              state: {
+                repoUrl: deployment?.repoUrl,
+                isRedeploy: true,
+                id: deployment?.id,
+              },
+            });
+          }}
+        >
+          Re deploy
+        </button>
+        <button
+          className={clsx(
+            "flex-1 bg-yellow-600/30 text-yellow-400 text-xs md:text-sm",
+            "px-3 py-2 rounded-md",
+            "hover:bg-yellow-600/50 active:scale-[0.98]",
+          )}
+        >
+          Stop
+        </button>
+        <button
+          className={clsx(
+            "flex-1 bg-amber-600/30 text-red-500 text-xs md:text-sm",
+            "px-3 py-2 rounded-md",
+            "hover:bg-amber-600/50 active:scale-[0.98]",
+          )}
+        >
+          Delete
+        </button>
+      </div>
       {/* Info Grid */}
       <div className="shrink-0 grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-neutral-900 border-b border-neutral-700">
         <div className="bg-neutral-800 p-3 rounded-lg">
