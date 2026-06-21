@@ -90,10 +90,18 @@ export const reconcile = async () => {
   const confDir = path.join(process.cwd(), "nginx", "conf.d");
   const confFiles = await fs.readdir(confDir);
 
+  const validRoutes = new Set(
+    deployments.filter((d) => d.route).map((d) => d.route),
+  );
+  for (const name of containerNames) {
+    const route = name.replace("container-", "");
+    validRoutes.add(route);
+  }
+
   for (const file of confFiles) {
     if (file === ".gitkeep" || file === "default.conf") continue;
     const route = file.replace(".conf", "");
-    if (!containerNames.includes(route)) {
+    if (!validRoutes.has(route)) {
       await fs.unlink(path.join(confDir, file));
       console.log(`Removed stale nginx config: ${file}`);
     }
