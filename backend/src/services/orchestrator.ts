@@ -12,10 +12,15 @@ import { logEmitter } from "../utils/logEmmiter.js";
 
 import type { DeploymentRow } from "../types/index.js";
 
+import fs from "fs/promises";
+import path from "path";
+
 import {
   updateDeployment,
   createDeployment,
+  getDeploymentById,
 } from "../repositories/deployment.repository.js";
+import { ApiError } from "../utils/apiError.js";
 
 // ─── Logging Helpers ──────────────────────────────────────────────────────────
 
@@ -79,7 +84,7 @@ export const orchestrateDeployment = async (
 ): Promise<DeploymentRow> => {
   const logBuffer: string[] = [];
   const id = deployment.id;
-
+  let deploymentPath: string | null = null;
   try {
     // ── 1. Clone ────────────────────────────────────────────────────────────
     await updateDeployment(id, { status: "cloning" });
@@ -87,6 +92,8 @@ export const orchestrateDeployment = async (
     emitLog(id, "CLONE", "Cloning repository...", logBuffer);
     const clone = await cloneRepo(deployment.repo_url, id);
     emitLog(id, "CLONE", "Repository cloned successfully.", logBuffer);
+
+    deploymentPath = clone.deploymentPath;
 
     // ── 2. Detect Runtime ───────────────────────────────────────────────────
     emitLog(id, "DETECT", "Detecting project runtime...", logBuffer);
@@ -180,7 +187,6 @@ export const orchestrateDeployment = async (
     const result = await updateDeployment(id, {
       logs: logBuffer.join("\n"),
     });
-
     return result;
   } catch (err) {
     const errorMsg =
@@ -197,21 +203,42 @@ export const orchestrateDeployment = async (
 
     console.error(`[deployer] Deployment ${id} failed:`, err);
     return result;
+  } finally {
+    if (deploymentPath) {
+      await fs.rm(deploymentPath, { recursive: true, force: true });
+    }
   }
 };
 
-export const startDeployment = async (repoUrl: string, userId: string) => {
-  const repoName = repoUrl.split("/").pop()?.replace(".git", "") || null;
-  const deployment: DeploymentRow = await createDeployment(
-    repoUrl,
-    repoName,
-    userId,
-  );
+export const startDeployment = async (
+  repoUrl: string,
+  userId: string,
+  deployment: DeploymentRow | null = null,
+) => {
+  if (deployment) {
+    //redeployment request
+    const deploymentPath = path.join(
+      process.cwd(),
+      "deployments",
+      deployment.id,
+    );
+    await fs.rm(deploymentPath, { recursive: true, force: true });
+    orchestrateDeployment(deployment);
 
-  if (!deployment) throw new Error("Failed to create deployment");
-  orchestrateDeployment(deployment);
+    return {
+      deploymentId: deployment.id,
+    };
+  }
+
+  const repoName = repoUrl.split("/").pop()?.replace(".git", "") || null;
+  if (!repoName) throw new ApiError(400, "Invalid repo url");
+
+  const depl: DeploymentRow = await createDeployment(repoUrl, repoName, userId);
+
+  if (!depl) throw new Error("Failed to create deployment");
+  orchestrateDeployment(depl);
 
   return {
-    deploymentId: deployment.id,
+    deploymentId: depl.id,
   };
 };

@@ -8,6 +8,7 @@ import {
   deploy,
   stopDeployment,
   streamLogs,
+  reDeploy,
 } from "../controllers/deployment.controller.js";
 
 const router = Router();
@@ -18,5 +19,6 @@ router.get("/:id/logs", authMiddleware, getDeploymentLogs);
 router.post("/", authMiddleware, deploy);
 router.post("/:id/stop", authMiddleware, stopDeployment);
 router.get("/:id/logs/stream", streamLogs);
+router.post("/:id/redeploy", authMiddleware, reDeploy);
 
 export default router;

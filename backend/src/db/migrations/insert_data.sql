@@ -47,3 +47,5 @@
 -- drop column run_logs;
 
 delete from deployments; 
+
+select * from deployments; 

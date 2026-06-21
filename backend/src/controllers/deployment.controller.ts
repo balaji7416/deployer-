@@ -79,6 +79,32 @@ export const stopDeployment = asyncHandler(
   },
 );
 
+export const reDeploy = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+
+  const deployment: DeploymentRow = await deploymentRepo.getDeploymentById(id);
+  if (!deployment) throw new ApiError(404, "deployment not found");
+
+  if (deployment.user_id !== req.user?.id)
+    throw new ApiError(
+      401,
+      "unauthorized, you don't have permission to re-deploy this deployment",
+    );
+
+  await updateDeployment(id, { status: "stopped" });
+  await stopContainer(id);
+
+  const depl: { deploymentId: string } = await startDeployment(
+    deployment.repo_url,
+    req.user?.id as string,
+    deployment,
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "re-deployment started", depl));
+});
+
 export const streamLogs = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
 

@@ -23,7 +23,7 @@ export const cloneRepo = async (
   // const local_react_proj = path.resolve("..", "frameIt_frontend");
   // await fs.cp(local_react_proj, deploymentPath, { recursive: true });
 
-  await fs.mkdir(deploymentPath);
+  await fs.mkdir(deploymentPath, { recursive: true });
   await runCommand("git", ["clone", repoUrl, "."], deploymentPath);
 
   return {
