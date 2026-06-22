@@ -79,6 +79,24 @@ export const stopDeployment = asyncHandler(
   },
 );
 
+export const deleteDeployment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+
+    const dpl: DeploymentRow = await deploymentRepo.getDeploymentById(id);
+    if (!dpl) throw new ApiError(404, "deployment not found");
+
+    if (dpl.user_id !== req.user?.id)
+      throw new ApiError(
+        401,
+        "unauthorized, you don't have permission to delete this deployment",
+      );
+    await deploymentRepo.deleteDeployment(id);
+
+    return res.status(200).json(new ApiResponse(200, "deleted deployment", {}));
+  },
+);
+
 export const reDeploy = asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id as string;
 

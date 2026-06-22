@@ -8,8 +8,6 @@ import {
   getAllDeployments,
   updateDeployment,
 } from "../repositories/deployment.repository.js";
-import { stopContainer } from "./stopContainer.js";
-import { reloadNginx } from "./nginx/reloadNginx.js";
 
 const ACTIVE_STATUSES = ["cloning", "building", "starting", "running"];
 
@@ -20,7 +18,9 @@ export const reconcile = async () => {
   const activeDeployments = deployments.filter((dpl) =>
     ACTIVE_STATUSES.includes(dpl.status),
   );
-
+  const runningDeployments = deployments.filter(
+    (depl) => depl.status === "running",
+  );
   const containerData: string = await runCommand(
     "docker",
     ["ps", "-a", "--format", "{{.Names}}"],
@@ -60,7 +60,7 @@ export const reconcile = async () => {
     //1. db says running but container not found => mark as stopped in db
     if (deployment.status === "running" && !ExistsInRunningContainers) {
       console.log(
-        `container ${deployment.container_name} not found in docker, marking as stopped`,
+        `container ${deployment.container_name} not found in docker running containers, marking as stopped`,
       );
       await updateDeployment(deployment.id, {
         status: "stopped",
@@ -91,9 +91,10 @@ export const reconcile = async () => {
   const confFiles = await fs.readdir(confDir);
 
   const validRoutes = new Set(
-    deployments.filter((d) => d.route).map((d) => d.route),
+    runningDeployments.filter((d) => d.route).map((d) => d.route),
   );
-  for (const name of containerNames) {
+
+  for (const name of runningContainerNames) {
     const route = name.replace("container-", "");
     validRoutes.add(route);
   }

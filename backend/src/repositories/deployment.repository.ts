@@ -67,6 +67,15 @@ export const updateDeployment = async (id: string, data: DeploymentUpdate) => {
   return rows[0];
 };
 
+export const deleteDeployment = async (id: string) => {
+  const query = `
+    delete from deployments
+    where id = $1
+  `;
+  const { rows } = await pool.query(query, [id]);
+  return rows[0];
+};
+
 export const deploymentRepo = {
   getAllDeployments,
   getUserDeployments,
@@ -74,4 +83,5 @@ export const deploymentRepo = {
   getDeploymentLogs,
   createDeployment,
   updateDeployment,
+  deleteDeployment,
 };
