@@ -5,12 +5,14 @@ import type { DeploymentResponse } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { formatTime } from "@/lib/utils";
 import clsx from "clsx";
+import { useDeleteDeployment } from "@/hooks/useDeploy";
 
 function Deployment() {
   const { id } = useParams() as { id: string };
   const { fetchDeployment } = useDeployments();
   const [deployment, setDeployment] = useState<DeploymentResponse | null>(null);
 
+  const { deleteDeployment, deleting } = useDeleteDeployment();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,6 +22,17 @@ function Deployment() {
     };
     fetchDepl();
   }, [id, fetchDeployment]);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDeployment(id);
+      navigate("/deployments");
+      alert("Deployment deleted successfully");
+    } catch (e) {
+      alert("Failed to delete deployment ");
+      console.error(e);
+    }
+  };
 
   if (!deployment) {
     return (
@@ -71,21 +84,15 @@ function Deployment() {
         </button>
         <button
           className={clsx(
-            "flex-1 bg-yellow-600/30 text-yellow-400 text-xs md:text-sm",
-            "px-3 py-2 rounded-md",
-            "hover:bg-yellow-600/50 active:scale-[0.98]",
-          )}
-        >
-          Stop
-        </button>
-        <button
-          className={clsx(
             "flex-1 bg-amber-600/30 text-red-500 text-xs md:text-sm",
             "px-3 py-2 rounded-md",
             "hover:bg-amber-600/50 active:scale-[0.98]",
+            deleting && "bg-amber-600/60 text-amber-600",
           )}
+          disabled={deleting}
+          onClick={() => handleDelete(deployment.id)}
         >
-          Delete
+          {deleting ? "Deleting..." : "Delete"}
         </button>
       </div>
       {/* Info Grid */}

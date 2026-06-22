@@ -1,3 +1,4 @@
+import axios from "axios";
 import api from "../utils/api";
 import { useState } from "react";
 
@@ -74,6 +75,35 @@ export const useRedeploy = () => {
   return {
     reDeploy,
     isDeploying,
+    error,
+  };
+};
+
+export const useDeleteDeployment = () => {
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const deleteDeployment = async (deploymentId: string): Promise<void> => {
+    try {
+      setDeleting(true);
+      setError(null);
+      await api.delete(`/deployments/${deploymentId}`);
+    } catch (e: unknown) {
+      console.error("Failed to delete deployment: ", e);
+      let errMsg: string = "";
+      if (axios.isAxiosError(e) && e.response) {
+        errMsg = e.response.data.message;
+      }
+      errMsg = errMsg || (e instanceof Error ? e.message : "unknown error");
+      setError(errMsg);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return {
+    deleteDeployment,
+    deleting,
     error,
   };
 };
