@@ -17,6 +17,9 @@ import {
 import { stopContainer } from "../services/stopContainer.js";
 import { logEmitter } from "../utils/logEmmiter.js";
 
+import fs from "fs/promises";
+import path from "path";
+
 export const getAllDeployments = asyncHandler(
   async (req: Request, res: Response) => {
     const deployments: DeploymentRow[] =
@@ -58,10 +61,12 @@ export const getDeploymentLogs = asyncHandler(
 
 export const deploy = asyncHandler(async (req: Request, res: Response) => {
   const repoUrl: string = req.body.repoUrl;
-
+  const rootDir: string = req.body.rootDir;
   const depl: { deploymentId: string } = await startDeployment(
     repoUrl,
     req.user?.id as string,
+    null,
+    rootDir,
   );
   return res.status(200).json(new ApiResponse(200, "deployment started", depl));
 });
@@ -93,6 +98,10 @@ export const deleteDeployment = asyncHandler(
       );
     await deploymentRepo.deleteDeployment(id);
 
+    //delete nginx config if present
+    await fs.rm(path.join(process.cwd(), "nginx", "conf.d", `${id}.conf`), {
+      force: true,
+    });
     return res.status(200).json(new ApiResponse(200, "deleted deployment", {}));
   },
 );

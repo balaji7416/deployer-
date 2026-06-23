@@ -42,11 +42,17 @@ export const createDeployment = async (
   repo_url: string,
   repo_name: string | null,
   user_id: string,
+  root_dir?: string,
 ) => {
   const query = `
-        insert into deployments (repo_url, repo_name, user_id) values ($1, $2, $3) returning *
+        insert into deployments (repo_url, repo_name, user_id, root_dir) values ($1, $2, $3, $4) returning *
     `;
-  const { rows } = await pool.query(query, [repo_url, repo_name, user_id]);
+  const { rows } = await pool.query(query, [
+    repo_url,
+    repo_name,
+    user_id,
+    root_dir,
+  ]);
   return rows[0];
 };
 

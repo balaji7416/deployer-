@@ -1,7 +1,5 @@
 import fs from "fs/promises";
 import path from "path";
-import { deploy } from "../../controllers/deployment.controller.js";
-import { config } from "dotenv";
 
 const NGINX_CONF_DIR = path.join(process.cwd(), "nginx", "conf.d");
 
@@ -13,22 +11,31 @@ export const generateNginxConfig = async (
   const route = deploymentId;
   const confPath = path.join(NGINX_CONF_DIR, `${route}.conf`);
 
+  const baseDomain = process.env.BASE_DOMAIN || "localhost";
+  const serverName = `${route}.${baseDomain}`;
+
+  // NOTE: Each deployment gets its own server block matching its subdomain.
+  // We forward all traffic from the root "/" directly to the upstream container.
   const nginx_config = `
-        server {
-            listen 80; 
+server {
+    listen 80;
+    server_name ${serverName};
 
-            server_name localhost;
+    location / {
+        proxy_pass http://${containerName}:${internalPort};
 
-            location /${route}/ {
-                proxy_pass http://${containerName}:${internalPort}/; 
-                
-                proxy_set_header Host $host; 
-                proxy_set_header X-Real-IP $remote_addr; 
-                proxy_set_header X-forwarded-For $proxy_add_x_forwarded_for; 
-                proxy_set_header X-forwarded-Proto $scheme;
-            }
-        }
-    `;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket support
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+`;
 
   await fs.mkdir(NGINX_CONF_DIR, { recursive: true });
   await fs.writeFile(confPath, nginx_config);

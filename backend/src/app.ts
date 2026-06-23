@@ -19,6 +19,15 @@ import { errorMiddleware } from "./middlewares/error.middleware.js";
 import deploymentRouter from "./routes/deployment.routes.js";
 import authRouter from "./routes/auth.routes.js";
 
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
+  process.exit(1);
+});
+
 const app = express();
 
 app.use(express.json());

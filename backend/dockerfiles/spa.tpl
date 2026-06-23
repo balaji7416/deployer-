@@ -7,15 +7,21 @@ RUN {{BUILD_COMMAND}}
 
 FROM nginx:alpine
 
-RUN echo 'server { \
-        listen 80; \
-        root /usr/share/nginx/html; \
-        index index.html; \
-        location / { \
-            try_files $uri /index.html; \
-        } \
-    }' > /etc/nginx/conf.d/default.conf
-
+# Copy built files to root
 COPY --from=builder /app/{{OUTPUT_DIR}} /usr/share/nginx/html
-EXPOSE {{EXPOSED_PORT}}
-CMD ["nginx","-g", "daemon off;"]
+
+RUN cat > /etc/nginx/conf.d/default.conf << 'EOF'
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Serve files directly, falling back to index.html for SPA routing
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+EOF
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

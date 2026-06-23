@@ -21,6 +21,7 @@ const fillTemplate = async (
 const generateDockerfile = async (
   workspacePath: string,
   runtime: RuntimeInfo,
+  deploymentId: string,
 ): Promise<void> => {
   const runtimeType = runtime.type;
 
@@ -45,7 +46,7 @@ const generateDockerfile = async (
       break;
     case "static":
       dockerfile = await fillTemplate("static.tpl", {
-        BASE_IMAGE: runtime.baseImage || "nginx:alpiine",
+        BASE_IMAGE: runtime.baseImage || "nginx:alpine",
         EXPOSED_PORT: String(runtime.exposedPort) || "80",
       });
       break;
@@ -55,6 +56,7 @@ const generateDockerfile = async (
         BUILD_COMMAND: runtime.buildCommand || "npm run build",
         OUTPUT_DIR: runtime.outputDir || "dist",
         EXPOSED_PORT: String(runtime.exposedPort) || "80",
+        DEPLOYMENT_ID: deploymentId,
       });
       break;
     case "dockerfile":

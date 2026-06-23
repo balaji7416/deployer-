@@ -12,7 +12,8 @@ import { logEmitter } from "../utils/logEmmiter.js";
 
 import type { DeploymentRow } from "../types/index.js";
 
-import fs from "fs/promises";
+import fs from "fs";
+import fsp from "fs/promises";
 import path from "path";
 
 import {
@@ -81,23 +82,27 @@ const emitLog = (
 
 export const orchestrateDeployment = async (
   deployment: DeploymentRow,
+  rootDir?: string,
 ): Promise<DeploymentRow> => {
   const logBuffer: string[] = [];
   const id = deployment.id;
   let deploymentPath: string | null = null;
+  let projectRootDir: string | null = null;
+
   try {
     // ── 1. Clone ────────────────────────────────────────────────────────────
     await updateDeployment(id, { status: "cloning" });
 
     emitLog(id, "CLONE", "Cloning repository...", logBuffer);
-    const clone = await cloneRepo(deployment.repo_url, id);
+    const clone = await cloneRepo(deployment.repo_url, id, rootDir);
     emitLog(id, "CLONE", "Repository cloned successfully.", logBuffer);
 
     deploymentPath = clone.deploymentPath;
+    projectRootDir = clone.projectRootDir;
 
     // ── 2. Detect Runtime ───────────────────────────────────────────────────
     emitLog(id, "DETECT", "Detecting project runtime...", logBuffer);
-    const runtime = await detectRuntime(clone.deploymentPath);
+    const runtime = await detectRuntime(clone.projectRootDir);
     if (runtime.type === "unknown") throw new Error("Unsupported runtime");
     emitLog(id, "DETECT", `Runtime detected: ${runtime.type}`, logBuffer);
 
@@ -105,19 +110,19 @@ export const orchestrateDeployment = async (
 
     // ── 3. Generate Dockerfile ──────────────────────────────────────────────
     emitLog(id, "DOCKERFILE", "Generating Dockerfile...", logBuffer);
-    await generateDockerfile(clone.deploymentPath, runtime);
+    await generateDockerfile(clone.projectRootDir, runtime, id);
     emitLog(id, "DOCKERFILE", "Dockerfile generated.", logBuffer);
 
     // ── 4. Generate .dockerignore ───────────────────────────────────────────
     emitLog(id, "DOCKERIGNORE", "Generating .dockerignore...", logBuffer);
-    await generateDockerignore(clone.deploymentPath);
+    await generateDockerignore(clone.projectRootDir);
     emitLog(id, "DOCKERIGNORE", ".dockerignore generated.", logBuffer);
 
     // ── 5. Build Image ──────────────────────────────────────────────────────
     await updateDeployment(id, { status: "building" });
 
     emitLog(id, "BUILD", "Building Docker image...", logBuffer);
-    const build = await buildImage(id, clone.deploymentPath);
+    const build = await buildImage(id, clone.projectRootDir);
 
     // Capture build output into the log buffer
     if (build.result) {
@@ -171,15 +176,17 @@ export const orchestrateDeployment = async (
     await reloadNginx(nginx.route);
     emitLog(id, "NETWORK", "Nginx reloaded successfully.", logBuffer);
 
-    // ── 8. Finalise ─────────────────────────────────────────────────────────
-    emitLog(id, "COMPLETE", `Deployment live at: /${nginx.route}`, logBuffer);
+    // 8. Finalise
+    const baseDomain = process.env.BASE_DOMAIN || "localhost";
+    const deploymentUrl = `http://${nginx.route}.${baseDomain}/`;
+    emitLog(id, "COMPLETE", `Deployment live at: ${deploymentUrl}`, logBuffer);
 
     logEmitter.emit("log", {
       deploymentId: id,
       stage: "complete",
       message: formatLog(
         "COMPLETE",
-        `Deployment finished — route: /${nginx.route}`,
+        `Deployment finished — route: ${deploymentUrl}`,
       ),
     });
 
@@ -201,11 +208,10 @@ export const orchestrateDeployment = async (
       logs: logBuffer.join("\n"),
     });
 
-    console.error(`[deployer] Deployment ${id} failed:`, err);
     return result;
   } finally {
     if (deploymentPath) {
-      await fs.rm(deploymentPath, { recursive: true, force: true });
+      await fsp.rm(deploymentPath, { recursive: true, force: true });
     }
   }
 };
@@ -214,6 +220,7 @@ export const startDeployment = async (
   repoUrl: string,
   userId: string,
   deployment: DeploymentRow | null = null,
+  rootDir?: string,
 ) => {
   if (deployment) {
     //redeployment request
@@ -222,8 +229,20 @@ export const startDeployment = async (
       "deployments",
       deployment.id,
     );
-    await fs.rm(deploymentPath, { recursive: true, force: true });
-    orchestrateDeployment(deployment);
+
+    //remove deployment path
+    for (let i = 0; i < 10; i++) {
+      try {
+        if (fs.existsSync(deploymentPath)) {
+          await fsp.rm(deploymentPath, { recursive: true, force: true });
+        }
+        break;
+      } catch (e) {
+        console.log("Error cleaning up deployment path: retrying...");
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+    orchestrateDeployment(deployment, rootDir || deployment?.root_dir || "");
 
     return {
       deploymentId: deployment.id,
@@ -233,10 +252,15 @@ export const startDeployment = async (
   const repoName = repoUrl.split("/").pop()?.replace(".git", "") || null;
   if (!repoName) throw new ApiError(400, "Invalid repo url");
 
-  const depl: DeploymentRow = await createDeployment(repoUrl, repoName, userId);
+  const depl: DeploymentRow = await createDeployment(
+    repoUrl,
+    repoName,
+    userId,
+    rootDir,
+  );
 
   if (!depl) throw new Error("Failed to create deployment");
-  orchestrateDeployment(depl);
+  orchestrateDeployment(depl, rootDir);
 
   return {
     deploymentId: depl.id,

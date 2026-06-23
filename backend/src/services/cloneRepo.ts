@@ -7,6 +7,7 @@ import { CloneResult } from "../types/index.js";
 export const cloneRepo = async (
   repoUrl: string,
   deploymentId: string,
+  rootDir?: string,
 ): Promise<CloneResult> => {
   if (!repoUrl) {
     throw new Error("repoUrl is required");
@@ -26,7 +27,11 @@ export const cloneRepo = async (
   await fs.mkdir(deploymentPath, { recursive: true });
   await runCommand("git", ["clone", repoUrl, "."], deploymentPath);
 
+  let projectRootDir;
+  if (rootDir) projectRootDir = path.join(deploymentPath, rootDir);
+  else projectRootDir = deploymentPath;
   return {
     deploymentPath,
+    projectRootDir,
   };
 };

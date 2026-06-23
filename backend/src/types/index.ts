@@ -31,6 +31,8 @@ export interface DeploymentRow {
   logs: string | null;
   error_message: string | null;
 
+  root_dir: string | null;
+
   created_at: Date;
   updated_at: Date;
 }
@@ -39,6 +41,7 @@ export interface DeploymentCreate {
   user_id: string;
   repo_url: string;
   repo_name: string;
+  root_dir?: string;
 }
 
 export interface DeploymentUpdate {
@@ -51,6 +54,7 @@ export interface DeploymentUpdate {
   runtime_type?: RuntimeType | null;
   logs?: string | null;
   error_message?: string | null;
+  root_dir?: string | null;
 }
 
 export interface DeploymentResponse {
@@ -70,6 +74,8 @@ export interface DeploymentResponse {
   logs: string | null;
   errorMessage: string | null;
 
+  rootDir: string | null;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -86,6 +92,7 @@ export interface RuntimeInfo {
 
 export interface CloneResult {
   deploymentPath: string;
+  projectRootDir: string;
 }
 
 export interface BuildResult {

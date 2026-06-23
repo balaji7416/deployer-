@@ -16,6 +16,7 @@ export const toDeploymentResponse = (
     runtimeType: deployment.runtime_type,
     logs: deployment.logs,
     errorMessage: deployment.error_message,
+    rootDir: deployment.root_dir,
     createdAt: deployment.created_at.toISOString(),
     updatedAt: deployment.updated_at.toISOString(),
   };

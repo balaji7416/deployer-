@@ -48,4 +48,8 @@
 
 delete from deployments; 
 
+-- alter table deployments
+-- add column root_dir text; 
+
 select * from deployments; 
+

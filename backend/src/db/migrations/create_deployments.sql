@@ -21,6 +21,8 @@ create table if not exists deployments (
     logs text, 
     error_message text, 
     
+    root_dir text,  -- root directory of the repo
+
     created_at timestamp default now(), 
     updated_at timestamp default now()
 );
