@@ -22,3 +22,12 @@ export function formatTime(dateString: string): string {
   if (diffDays === 1) return "1 day ago";
   return `${diffDays} days ago`;
 }
+
+export function getDeploymentUrl(route: string | null): string {
+  if (!route) return "";
+  const host = window.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1") {
+    return `http://${route}.localhost/`;
+  }
+  return `http://${route}.${host}/`;
+}

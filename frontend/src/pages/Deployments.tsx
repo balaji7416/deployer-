@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import clsx from "clsx";
 import type { DeploymentResponse } from "@/lib/types";
-import { formatTime } from "@/lib/utils";
+import { formatTime, getDeploymentUrl } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
@@ -100,11 +100,12 @@ function Deployments() {
                 <div className="flex justify-between">
                   <span>URL</span>
                   <a
-                    href={`http://localhost/${depl.route}/`}
+                    href={getDeploymentUrl(depl.route)}
                     className="truncate text-blue-500 text-xs"
                     target="_blank"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {depl.route}
+                    {getDeploymentUrl(depl.route)}
                   </a>
                 </div>
 

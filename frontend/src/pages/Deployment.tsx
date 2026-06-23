@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useDeployments } from "@/hooks/useDeployment";
 import type { DeploymentResponse } from "@/lib/types";
 import { useEffect, useState } from "react";
-import { formatTime } from "@/lib/utils";
+import { formatTime, getDeploymentUrl } from "@/lib/utils";
 import clsx from "clsx";
 import { useDeleteDeployment } from "@/hooks/useDeploy";
 
@@ -116,12 +116,12 @@ function Deployment() {
             Route
           </p>
           <a
-            href={`http://localhost/${deployment.route}/`}
+            href={getDeploymentUrl(deployment.route)}
             target="_blank"
             rel="noreferrer"
             className="text-sm text-blue-400 hover:text-blue-300 truncate block"
           >
-            {deployment.route}
+            {getDeploymentUrl(deployment.route)}
           </a>
         </div>
 

@@ -4,7 +4,15 @@ import { useState } from "react";
 
 interface DeployResponse {
   deploymentId: string | null;
-  deploy: (repoUrl: string, deplId?: string) => Promise<void>;
+  deploy: ({
+    repoUrl,
+    rootDir,
+    deplId,
+  }: {
+    repoUrl: string;
+    rootDir?: string;
+    deplId?: string;
+  }) => Promise<void>;
   loading: boolean;
   error: string | null;
   isDeploying: boolean;
@@ -17,7 +25,15 @@ export const useDeploy = (): DeployResponse => {
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const deploy = async (repoUrl: string, deplId?: string) => {
+  const deploy = async ({
+    repoUrl,
+    rootDir,
+    deplId,
+  }: {
+    repoUrl: string;
+    rootDir?: string;
+    deplId?: string;
+  }) => {
     try {
       setLoading(true);
       setIsDeploying(true);
@@ -26,7 +42,7 @@ export const useDeploy = (): DeployResponse => {
       setDeploymentId(null);
       let res;
       if (deplId) res = await api.post(`/deployments/${deplId}/redeploy`);
-      else res = await api.post("/deployments", { repoUrl });
+      else res = await api.post("/deployments", { repoUrl, rootDir });
       setDeploymentId(res.data.data.deploymentId); //  nested in data.data
     } catch (e) {
       console.error("Failed to deploy:", e);
