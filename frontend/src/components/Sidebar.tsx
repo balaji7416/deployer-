@@ -54,7 +54,7 @@ function Sidebar() {
           "flex flex-col justify-between",
           "fixed top-0 left-0 h-full z-50",
           "flex flex-col",
-          "w-72 sm:w-80 bg-neutral-900 border-r border-neutral-800 p-2",
+          "w-72 sm:w-80 bg-neutral-900 border-r border-neutral-700 p-2",
           "transition-all duration-300 ease-in-out",
           // Mobile behavior
           isMobile && (open ? "translate-x-0" : "-translate-x-full"),
