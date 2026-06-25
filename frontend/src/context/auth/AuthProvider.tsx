@@ -2,7 +2,7 @@ import { AuthContext } from "./authContext";
 import api from "@/utils/api";
 import type { User } from "@/lib/types";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -95,15 +95,31 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(data);
     } catch (error: unknown) {
       console.log("failed to check auth: ", error);
-      localStorage.clear();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       navigate("/auth");
     } finally {
       setAuthChecking(false);
     }
   };
 
+  //for auto logout when server responds with 401, unauthorized
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/auth");
+    };
+
+    window.addEventListener("unauthorized", handleUnauthorized);
+    return () => {
+      window.removeEventListener("unauthorized", handleUnauthorized);
+    };
+  }, [navigate]);
+
   const value = {
     user,
+    setUser,
     register,
     login,
     registerLoading,

@@ -3,6 +3,7 @@ import type { User } from "@/lib/types";
 
 interface AuthContextType {
   user: User | null;
+  setUser: (user: User | null) => void;
   login: ({
     username,
     password,

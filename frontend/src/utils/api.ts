@@ -1,4 +1,5 @@
 import axios from "axios";
+
 const base_url = "http://localhost:3000/api";
 
 const api = axios.create({
@@ -12,6 +13,16 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error),
+);
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response.status === 401) {
+      window.dispatchEvent(new Event("unauthorized"));
+    }
+    return Promise.reject(err);
+  },
 );
 
 export default api;
