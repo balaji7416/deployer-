@@ -13,8 +13,12 @@ declare global {
   }
 }
 
-export const authMiddleware = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
+export const authMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
     const token =
       req.cookies?.token || req?.headers?.authorization?.split(" ")[1];
 
@@ -30,5 +34,10 @@ export const authMiddleware = asyncHandler(
     req.user = user;
 
     next();
-  },
-);
+  } catch (err) {
+    if (err instanceof ApiError) return next(err);
+    if (err instanceof jwt.TokenExpiredError)
+      return next(new ApiError(401, "Unauthorized, token expired"));
+    return next(new ApiError(401, "Unauthorized"));
+  }
+};

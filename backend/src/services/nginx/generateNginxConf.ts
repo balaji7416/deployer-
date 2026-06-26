@@ -21,8 +21,12 @@ server {
     listen 80;
     server_name ${serverName};
 
+    resolver 127.0.0.11 valid=30s;
+
     location / {
-        proxy_pass http://${containerName}:${internalPort};
+        set $upstream_target http://${containerName}:${internalPort};
+
+        proxy_pass $upstream_target;
 
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

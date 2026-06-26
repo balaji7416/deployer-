@@ -15,18 +15,19 @@ export const reconcile = async () => {
   console.log("starting recilation...");
 
   const deployments: DeploymentRow[] = await getAllDeployments();
+
   const activeDeployments = deployments.filter((dpl) =>
     ACTIVE_STATUSES.includes(dpl.status),
   );
   const runningDeployments = deployments.filter(
     (depl) => depl.status === "running",
   );
-  const containerData: string = await runCommand(
+
+  const AllcontainerData: string = await runCommand(
     "docker",
     ["ps", "-a", "--format", "{{.Names}}"],
     { silent: true },
   );
-
   const runningContainerData: string = await runCommand(
     "docker",
     ["ps", "--format", "{{.Names}}"],
@@ -35,8 +36,7 @@ export const reconcile = async () => {
     },
   );
 
-  const containerNames: string[] = containerData
-    .split("\n")
+  const allContainerNames: string[] = AllcontainerData.split("\n")
     .map((name) => name.trim())
     .filter((name) => name.startsWith("container-"));
 
@@ -46,12 +46,12 @@ export const reconcile = async () => {
     .filter((name) => name.startsWith("container-"));
 
   /*logic: 
-    1. if deployment is not in containerNames, stop & mark deployment as stopped
+    1. if deployment is not in AllcontainerNames, stop & mark deployment as stopped
     2. if deployment is in containerNames, but not in deployments, remove container
   */
 
   for (const deployment of activeDeployments) {
-    const ExistsInContainerNames = containerNames.includes(
+    const ExistsInContainerNames = allContainerNames.includes(
       deployment.container_name || "",
     );
     const ExistsInRunningContainers = runningContainerNames.includes(
@@ -60,11 +60,11 @@ export const reconcile = async () => {
     //1. db says running but container not found => mark as stopped in db
     if (deployment.status === "running" && !ExistsInRunningContainers) {
       console.log(
-        `container ${deployment.container_name} not found in docker running containers, marking as stopped`,
+        `container ${deployment.container_name} not found in docker running containers, triggering health check take over`,
       );
       await updateDeployment(deployment.id, {
-        status: "stopped",
-        error_message: "container not found (possible crash)",
+        status: "restarting",
+        error_message: "container stopped(possible crash)",
       });
 
       //await stopContainer(deployment.id);
@@ -90,14 +90,7 @@ export const reconcile = async () => {
   const confDir = path.join(process.cwd(), "nginx", "conf.d");
   const confFiles = await fs.readdir(confDir);
 
-  const validRoutes = new Set(
-    runningDeployments.filter((d) => d.route).map((d) => d.route),
-  );
-
-  for (const name of runningContainerNames) {
-    const route = name.replace("container-", "");
-    validRoutes.add(route);
-  }
+  const validRoutes = new Set(deployments.map((depl) => depl.route?.trim()));
 
   for (const file of confFiles) {
     if (file === ".gitkeep" || file === "default.conf") continue;
@@ -107,10 +100,9 @@ export const reconcile = async () => {
       console.log(`Removed stale nginx config: ${file}`);
     }
   }
-
   //5. remove containers that are not in db but are in containerNames
   const activeNames = activeDeployments.map((dpl) => dpl.container_name);
-  for (const name of containerNames) {
+  for (const name of allContainerNames) {
     if (!activeNames.includes(name)) {
       console.log(`container ${name} record not found in db, removing it...`);
       await runCommand("docker", ["rm", "-f", name]);

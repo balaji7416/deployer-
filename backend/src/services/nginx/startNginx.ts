@@ -14,11 +14,13 @@ export const startNginx = async () => {
     ["ps", "-a", "--filter", "name=deployer-nginx", "--format", "{{.Names}}"],
     { silent: true },
   );
+
   if (!nginxRunning.trim() && nginxStopped.trim()) {
     console.log("nginx stopped, starting nginx...");
     await runCommand("docker", ["start", "deployer-nginx"]);
     return;
   }
+
   const confDir = path.resolve(process.cwd(), "nginx", "conf.d");
   const staticDir = path.resolve(process.cwd(), "nginx", "static");
 

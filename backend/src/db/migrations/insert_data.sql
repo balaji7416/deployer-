@@ -46,10 +46,16 @@
 -- alter table deployments
 -- drop column run_logs;
 
-delete from deployments; 
+-- delete from deployments; 
+
+
 
 -- alter table deployments
 -- add column root_dir text; 
 
-select * from deployments; 
+-- alter table deployments
+-- drop constraint deployments_status_check; 
 
+alter table deployments 
+add constraint deployments_status_check
+check (status in ('queued', 'cloning','building', 'starting','running','failed','stopped','restarting'));

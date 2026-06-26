@@ -8,7 +8,7 @@ create table if not exists deployments (
     repo_url text not null, 
     repo_name text, 
     
-    status text check (status in ('queued', 'cloning','building', 'starting','running','failed','stopped')),
+    status text check (status in ('queued', 'cloning','building', 'starting','running','failed','stopped','restarting')),
     -- port integer,
     route text unique,
     
