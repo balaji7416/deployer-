@@ -17,6 +17,8 @@ import {
 import { stopContainer } from "../services/stopContainer.js";
 import { logEmitter } from "../utils/logEmmiter.js";
 
+import { deploymentQueue } from "../services/DeploymentQueue.js";
+
 import fs from "fs/promises";
 import path from "path";
 
@@ -62,13 +64,20 @@ export const getDeploymentLogs = asyncHandler(
 export const deploy = asyncHandler(async (req: Request, res: Response) => {
   const repoUrl: string = req.body.repoUrl;
   const rootDir: string = req.body.rootDir;
-  const depl: { deploymentId: string } = await startDeployment(
+
+  const repoName = repoUrl.split("/").pop()?.replace(".git", "") || null;
+  if (!repoName) throw new ApiError(400, "Invalid repo url");
+
+  const deployment: DeploymentRow = await deploymentRepo.createDeployment(
     repoUrl,
+    repoName,
     req.user?.id as string,
-    null,
     rootDir,
   );
-  return res.status(200).json(new ApiResponse(200, "deployment started", depl));
+  deploymentQueue.add(deployment);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "deployment queued", deployment));
 });
 
 export const stopDeployment = asyncHandler(
@@ -121,15 +130,11 @@ export const reDeploy = asyncHandler(async (req: Request, res: Response) => {
   await updateDeployment(id, { status: "stopped" });
   await stopContainer(id);
 
-  const depl: { deploymentId: string } = await startDeployment(
-    deployment.repo_url,
-    req.user?.id as string,
-    deployment,
-  );
+  deploymentQueue.add(deployment);
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "re-deployment started", depl));
+    .json(new ApiResponse(200, "re-deployment Request queued", deployment));
 });
 
 export const streamLogs = asyncHandler(async (req: Request, res: Response) => {

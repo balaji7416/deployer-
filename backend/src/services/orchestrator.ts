@@ -216,53 +216,6 @@ export const orchestrateDeployment = async (
   }
 };
 
-export const startDeployment = async (
-  repoUrl: string,
-  userId: string,
-  deployment: DeploymentRow | null = null,
-  rootDir?: string,
-) => {
-  if (deployment) {
-    //redeployment request
-    const deploymentPath = path.join(
-      process.cwd(),
-      "deployments",
-      deployment.id,
-    );
-
-    //remove deployment path
-    for (let i = 0; i < 10; i++) {
-      try {
-        if (fs.existsSync(deploymentPath)) {
-          await fsp.rm(deploymentPath, { recursive: true, force: true });
-        }
-        break;
-      } catch (e) {
-        console.log("Error cleaning up deployment path: retrying...");
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    }
-    orchestrateDeployment(deployment, rootDir || deployment?.root_dir || "");
-
-    return {
-      deploymentId: deployment.id,
-    };
-  }
-
-  const repoName = repoUrl.split("/").pop()?.replace(".git", "") || null;
-  if (!repoName) throw new ApiError(400, "Invalid repo url");
-
-  const depl: DeploymentRow = await createDeployment(
-    repoUrl,
-    repoName,
-    userId,
-    rootDir,
-  );
-
-  if (!depl) throw new Error("Failed to create deployment");
-  orchestrateDeployment(depl, rootDir);
-
-  return {
-    deploymentId: depl.id,
-  };
+export const startDeployment = async (deployment: DeploymentRow) => {
+  orchestrateDeployment(deployment, deployment?.root_dir || "");
 };
