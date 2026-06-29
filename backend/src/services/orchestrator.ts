@@ -11,6 +11,8 @@ import { getPort, freePort } from "../utils/portAllocator.js";
 import { logEmitter } from "../utils/logEmmiter.js";
 
 import type { DeploymentRow } from "../types/index.js";
+import { deploymentRepo } from "../repositories/deployment.repository.js";
+import type { EnvVarRow } from "../types/index.js";
 
 import fs from "fs";
 import fsp from "fs/promises";
@@ -143,7 +145,13 @@ export const orchestrateDeployment = async (
     const containerPort = runtime.exposedPort || 3000;
 
     emitLog(id, "DEPLOY", "Starting container...", logBuffer);
-    const run = await runContainer(id);
+    const envVarRecords: EnvVarRow[] = await deploymentRepo.getEnvVariables(
+      deployment.id,
+    );
+    const envVars = Object.fromEntries(
+      envVarRecords.map(({ key, value }) => [key, value]),
+    );
+    const run = await runContainer(id, envVars);
 
     // Capture run output into the log buffer
     if (run.result) {

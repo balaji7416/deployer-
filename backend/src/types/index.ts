@@ -114,3 +114,12 @@ export interface User {
   created_at: Date;
   updated_at: Date;
 }
+
+export interface EnvVarRow {
+  id: string;
+  deployment_id: string;
+  key: string;
+  value: string;
+  created_at: Date;
+  updated_at: Date;
+}

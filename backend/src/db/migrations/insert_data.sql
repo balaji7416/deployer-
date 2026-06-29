@@ -56,6 +56,13 @@
 -- alter table deployments
 -- drop constraint deployments_status_check; 
 
-alter table deployments 
-add constraint deployments_status_check
-check (status in ('queued', 'cloning','building', 'starting','running','failed','stopped','restarting'));
+-- alter table deployments 
+-- add constraint deployments_status_check
+-- check (status in ('queued', 'cloning','building', 'starting','running','failed','stopped','restarting'));
+
+-- alter table env_variables
+-- drop constraint env_variables_deployment_id_fkey;
+
+alter table env_variables
+add constraint env_variables_deployment_id_fkey
+foreign key (deployment_id) references deployments(id) on delete cascade;

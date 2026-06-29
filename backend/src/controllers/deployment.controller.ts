@@ -10,14 +10,11 @@ import {
   deploymentRepo,
   updateDeployment,
 } from "../repositories/deployment.repository.js";
-import {
-  orchestrateDeployment,
-  startDeployment,
-} from "../services/orchestrator.js";
+
 import { stopContainer } from "../services/stopContainer.js";
 import { logEmitter } from "../utils/logEmmiter.js";
 
-import { deploymentQueue } from "../services/DeploymentQueue.js";
+import { deploymentQueue } from "../services/deploymentQueue.js";
 
 import fs from "fs/promises";
 import path from "path";
@@ -64,6 +61,7 @@ export const getDeploymentLogs = asyncHandler(
 export const deploy = asyncHandler(async (req: Request, res: Response) => {
   const repoUrl: string = req.body.repoUrl;
   const rootDir: string = req.body.rootDir;
+  const envVars: Record<string, string> = req.body.envVars || {};
 
   const repoName = repoUrl.split("/").pop()?.replace(".git", "") || null;
   if (!repoName) throw new ApiError(400, "Invalid repo url");
@@ -73,8 +71,10 @@ export const deploy = asyncHandler(async (req: Request, res: Response) => {
     repoName,
     req.user?.id as string,
     rootDir,
+    envVars,
   );
   deploymentQueue.add(deployment);
+
   return res
     .status(200)
     .json(new ApiResponse(200, "deployment queued", deployment));

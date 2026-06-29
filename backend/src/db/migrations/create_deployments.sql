@@ -37,3 +37,14 @@ create table if not exists users (
     created_at timestamp default now(), 
     updated_at timestamp default now()
 );
+
+create table if not exists env_variables(
+    id uuid primary key default gen_random_uuid(), 
+    deployment_id uuid references deployments(id), 
+
+    key text not null, 
+    value text not null, 
+
+    created_at timestamp default now(),
+    updated_at timestamp default now()
+);
