@@ -44,7 +44,7 @@ function DeploymentCard({ depl }: { depl: DeploymentResponse }) {
           <span>run time</span>
           <span>{depl.runtimeType}</span>
         </div>
-        <div className="flex justify-between">
+        <div className="flex items-center justify-between gap-3">
           <span>URL</span>
           <a
             href={getDeploymentUrl(depl.route)}

@@ -29,10 +29,12 @@ export const useDeploy = (): DeployResponse => {
     repoUrl,
     rootDir,
     deplId,
+    envVars,
   }: {
     repoUrl: string;
     rootDir?: string;
     deplId?: string;
+    envVars?: Record<string, string>;
   }) => {
     try {
       setLoading(true);
@@ -41,9 +43,14 @@ export const useDeploy = (): DeployResponse => {
       // (as in redeploy), the state change null → id triggers useLogStream
       setDeploymentId(null);
       let res;
-      if (deplId) res = await api.post(`/deployments/${deplId}/redeploy`);
-      else res = await api.post("/deployments", { repoUrl, rootDir });
-      setDeploymentId(res.data.data.deploymentId); //  nested in data.data
+      if (deplId)
+        res = await api.post(`/deployments/${deplId}/redeploy`, {
+          repoUrl,
+          rootDir,
+          envVars,
+        });
+      else res = await api.post("/deployments", { repoUrl, rootDir, envVars });
+      setDeploymentId(res.data.data.id); //  nested in data.data
     } catch (e) {
       console.error("Failed to deploy:", e);
 

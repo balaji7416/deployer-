@@ -5,7 +5,8 @@ export type DeploymentStatus =
   | "starting"
   | "running"
   | "failed"
-  | "stopped";
+  | "stopped"
+  | "restarting";
 
 export type RuntimeType =
   | "static"

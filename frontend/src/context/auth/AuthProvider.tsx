@@ -75,7 +75,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("failed to login: ", error);
       let errMsg;
       if (axios.isAxiosError(error) && error.response) {
-        errMsg = error.response.data?.mesage;
+        errMsg = error.response.data?.message;
       }
       if (!errMsg)
         errMsg = error instanceof Error ? error.message : "unknown error";

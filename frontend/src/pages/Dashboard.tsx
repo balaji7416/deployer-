@@ -14,7 +14,9 @@ function Dashboard() {
   const failedcnt = deployments.filter(
     (depl) => depl.status === "failed",
   ).length;
-
+  const stoppedcnt = deployments.filter(
+    (depl) => depl.status === "stopped",
+  ).length;
   return (
     <div className="flex flex-col p-5 gap-1 h-full">
       <div
@@ -59,6 +61,10 @@ function Dashboard() {
             <h1 className="font-semibold text-red-300">
               <span>Failed: </span>
               <span className="font-mono text-neutral-300">{failedcnt}</span>
+            </h1>
+            <h1 className="font-semibold text-gray-300">
+              <span>Stopped: </span>
+              <span className="font-mono text-neutral-300">{stoppedcnt}</span>
             </h1>
           </div>
         </div>

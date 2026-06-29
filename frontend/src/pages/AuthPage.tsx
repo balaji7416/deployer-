@@ -55,7 +55,7 @@ function AuthPage() {
           className="object-cover h-full w-full rounded-2xl"
         />
       </div>
-      <div className="bg-black w-full md:w-[400px] lg:w-[600px] flex items-center justify-center">
+      <div className="bg-black w-full md:w-[400px] lg:w-[600px] flex flex-col items-center justify-center gap-5">
         <Card className="w-full max-w-md bg-neutral-900 shadow-md shadow-gray-600">
           <CardHeader>
             <CardTitle className="text-gray-200">
