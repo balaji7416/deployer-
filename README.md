@@ -10,10 +10,12 @@
 
 ### Deployments Page
 
-![Deployment Records](./docs//deployments.png)
+![Deployment Records](./docs//deployments_page.png)
 
 ### Deploy Page
 
+![Deploy page](./docs/deploy_page_1.png)
+![Deploy page](./docs/deploy_page_2.png)
 ![Deploy page](./docs/deploying.png)
 
 ## Features
