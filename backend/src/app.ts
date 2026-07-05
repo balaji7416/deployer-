@@ -65,8 +65,10 @@ const connectToDB = async () => {
   for (let i = 0; i < 10; i++) {
     try {
       await testDB();
+
       return;
     } catch (e) {
+      console.log("DB host: ", process.env.DB_HOST);
       console.log("failed to connect to database, retrying...");
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }

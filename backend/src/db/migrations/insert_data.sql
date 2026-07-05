@@ -63,6 +63,8 @@
 -- alter table env_variables
 -- drop constraint env_variables_deployment_id_fkey;
 
-alter table env_variables
-add constraint env_variables_deployment_id_fkey
-foreign key (deployment_id) references deployments(id) on delete cascade;
+-- alter table env_variables
+-- add constraint env_variables_deployment_id_fkey
+-- foreign key (deployment_id) references deployments(id) on delete cascade;
+
+select * from deployments; 

@@ -10,11 +10,12 @@ function useLogStream(deploymentId: string | null): {
   useEffect(() => {
     if (!deploymentId) return;
 
-    setLogs([]);
     setDone(false);
 
+    //const connectionURL = `http://localhost:3000/api/deployments/${deploymentId}/logs/stream`; (if using from local server)
+    const connectionURL = `http://localhost/api/deployments/${deploymentId}/logs/stream`;
     const es = new EventSource(
-      `http://localhost:3000/api/deployments/${deploymentId}/logs/stream`,
+      connectionURL
     );
 
     es.onmessage = (e) => {

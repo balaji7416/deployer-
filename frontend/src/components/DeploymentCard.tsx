@@ -58,7 +58,7 @@ function DeploymentCard({ depl }: { depl: DeploymentResponse }) {
 
         <div>
           <span>Logs</span>
-          <div className="text-xs font-mono text-green-500 border border-neutral-800 p-2 rounded-md">
+          <div className="text-xs font-mono text-neutral-400 border border-neutral-800 p-2 rounded-md">
             {preview}
 
             {depl.logs && (

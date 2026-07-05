@@ -21,27 +21,8 @@ export const startNginx = async () => {
     return;
   }
 
-  const confDir = path.resolve(process.cwd(), "nginx", "conf.d");
-  const staticDir = path.resolve(process.cwd(), "nginx", "static");
-
-  //console.log("confDir: ", confDir);
   if (!nginxRunning.trim()) {
-    console.log("nginx not running, starting nginx...");
-    await runCommand("docker", [
-      "run",
-      "-d",
-      "--name",
-      "deployer-nginx",
-      "--network",
-      "deploy-net",
-      "-p",
-      "80:80",
-      "-v",
-      `${confDir}:/etc/nginx/conf.d`,
-      "-v",
-      `${staticDir}:/usr/share/nginx/custom-pages`,
-      "nginx:alpine",
-    ]);
+    throw new Error("deployer-nginx container not found. Please start it using docker-compose.");
   }
   console.log("---- nginx running ----");
 };

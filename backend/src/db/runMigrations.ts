@@ -6,12 +6,11 @@ import { prepareDB } from "./prepareDB.js";
 import { testDB } from "./pool.js";
 
 export const runMigrations = async () => {
-  const client = await pool.connect();
-  try {
-    await prepareDB();
-  } catch (e) {
-    console.log("error setting docker postgres container: ", e);
-  }
+  // try {
+  //   await prepareDB();
+  // } catch (e) {
+  //   console.log("error setting docker postgres container: ", e);
+  // }
 
   // connect to database
   const connectToDB = async () => {
@@ -28,6 +27,8 @@ export const runMigrations = async () => {
     throw new Error("failed to connect to database");
   };
   await connectToDB();
+
+  const client = await pool.connect();
   try {
     const sql = await fs.readFile(
       path.join(
@@ -40,10 +41,14 @@ export const runMigrations = async () => {
       "utf-8",
     );
     await client.query(sql);
+    console.log("migrations ran successfully!");
   } catch (err) {
     console.log("error running migrations: ", err);
+    process.exit(1);
     throw err;
   } finally {
     client.release();
   }
 };
+
+runMigrations();

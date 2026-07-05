@@ -93,7 +93,12 @@ export const reconcile = async () => {
   const validRoutes = new Set(deployments.map((depl) => depl.route?.trim()));
 
   for (const file of confFiles) {
-    if (file === ".gitkeep" || file === "default.conf") continue;
+    if (
+      file === ".gitkeep" ||
+      file === "default.conf" ||
+      file === "platform.conf"
+    )
+      continue;
     const route = file.replace(".conf", "");
     if (!validRoutes.has(route)) {
       await fs.unlink(path.join(confDir, file));

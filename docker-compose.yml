@@ -1,0 +1,72 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: deployer-backend
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+    # wait compose until postgres is ready
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nginx:
+        condition: service_started
+    # run migrations and start backend
+    command: sh -c "npm run migrate && npm run dev"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - nginx-configs:/app/nginx/conf.d
+    networks:
+      - deploy-net
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: deployer-frontend
+    restart: unless-stopped
+    networks:
+      - deploy-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: deployer-postgres
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "deployer"
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - deploy-net
+    restart: unless-stopped
+    # health check for knowing whether the DB is accepting connections or not
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d deployer"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: deployer-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro # ro : read only
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx-configs:/etc/nginx/user_conf.d
+      - ./backend/nginx/static:/usr/share/nginx/custom-pages
+    networks:
+      - deploy-net
+    restart: unless-stopped
+
+networks:
+  deploy-net:
+    name: deploy-net
+
+volumes:
+  pgdata:
+  nginx-configs:
