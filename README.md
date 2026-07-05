@@ -112,8 +112,10 @@ flowchart TD
 
 ### Prerequisites
 
-    - Node.js
-    - Docker
+- Git
+- Docker
+
+> **Note:** Make sure Docker Desktop (Windows/macOS) or the Docker daemon (Linux) is running before continuing.
 
 ### Installation
 
@@ -121,57 +123,37 @@ flowchart TD
 
 ```bash
 git clone https://github.com/balaji7416/deployer-
+cd deployer
 ```
 
-- **Set up Backend**
-  - **_*Note:*_** run the following commands in the `backend` directory
-  - use dummy `.env.example` as `.env` file / configure environment variables
+- **Set up the environment variables**
 
-    ```bash
-       cp .env.example .env
-    ```
+```bash
+cp backend/.env.example backend/.env
+```
 
-  - **_install dependencies_**
+- **Start the application**
 
-    ```bash
-    npm install
-    ```
+```bash
+docker compose up --build
+```
 
-  - **_run migrations_**
+- **Stop the application**
 
-    ```bash
-    npm run migrate
-    ```
+```bash
+docker compose down
+```
 
-  - **_run backend_**
+- **Stop the application and remove all persistent data (volumes)**
 
-    ```bash
-    npm run dev
-    ```
+```bash
+docker compose down -v
+```
 
-- **Set up Frontend**
-  - **_*Note:*_** run the following commands in the `frontend` directory
-  - **_install dependencies_**
+## Access the Application
 
-    ```bash
-    npm install
-    ```
-
-  - **_run frontend_**
-
-    ```bash
-    npm run dev
-    ```
-
-- **Start the Docker Daemon**
-  - install docker desktop (if not already installed)
-  - open docker desktop and start the docker daemon
-  - if you are using linux run `sudo systemctl start docker`
-
-## Access the Frontend and Backend
-
-- You can access the frontend at http://localhost:5173
-- You can access the backend at http://localhost:3001
+- **Frontend:** http://localhost
+- **Backend API:** http://localhost/api
 
 ## Future Improvements
 
