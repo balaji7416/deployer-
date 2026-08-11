@@ -4,19 +4,8 @@
 
 ## Screenshots
 
-### Authentication
-
-![Authentication Page](./docs/authpage.png)
-
-### Deployments Page
-
-![Deployment Records](./docs//deployments_page.png)
-
-### Deploy Page
-
-![Deploy page](./docs/deploy_page_1.png)
-![Deploy page](./docs/deploy_page_2.png)
-![Deploy page](./docs/deploying.png)
+![Authentication Page](./docs/auth_page.png)
+![Deployment Page](./docs/deployment_detail.png)
 
 ## Features
 
