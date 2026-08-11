@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import DeployForm from "../components/DeployForm";
+import DeployForm from "../components/deployment/DeployForm";
 import LogTerminal from "../components/LogTerminal";
 import { useDeploy } from "../hooks/useDeploy";
 import useLogStream from "../hooks/useLogStream";
@@ -14,16 +14,22 @@ function DeployPage() {
   const { deploy, deploymentId, loading, isDeploying, updateIsDeploying } =
     useDeploy();
 
-  const { logs, done } = useLogStream(deploymentId);
+  const { logs, done, failed } = useLogStream(deploymentId);
   const location = useLocation();
 
   useEffect(() => {
     if (done && !loading) {
       updateIsDeploying(false);
       setIsDeployingLocal(false);
-      setTimeout(() => navigate("/deployments"), 2000);
+      setTimeout(() => {
+        if (deploymentId) {
+          navigate(`/deployments/${deploymentId}`);
+        } else {
+          navigate("/deployments");
+        }
+      }, 1800);
     }
-  }, [done, loading, updateIsDeploying, navigate]);
+  }, [done, loading, deploymentId, updateIsDeploying, navigate]);
 
   // Auto-show terminal when deployment starts
   useEffect(() => {
@@ -34,63 +40,70 @@ function DeployPage() {
   }, [isDeploying, loading]);
 
   return (
-    <div className="flex flex-col h-screen bg-black text-white">
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold mb-4 md:mb-6">Deploy Project</h1>
-
-          <DeployForm
-            onDeploy={deploy}
-            loading={loading}
-            isDeploying={isDeploying}
-            state={location.state}
-          />
+    <div className="space-y-6 pb-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-xl font-bold text-neutral-100">
+            Deploy Your Project
+          </h1>
+          <p className="text-xs text-neutral-400">
+            Import a public GitHub repository to build and deploy your service.
+          </p>
         </div>
-      </div>
 
-      {/* Terminal Section - Collapsible */}
-      <div className="border-t border-neutral-800 bg-neutral-900">
-        {/* Terminal Toggle Button */}
-        <button
-          onClick={() => setShowTerminal(!showTerminal)}
-          className="w-full flex items-center justify-between px-6 py-3 hover:bg-neutral-800 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Terminal className="h-4 w-4 text-neutral-400" />
-            <span className="text-sm font-medium text-neutral-300">
-              {isDeployingLocal ? "Deployment Logs" : "Terminal"}
-            </span>
-            {isDeployingLocal && (
-              <span className="text-xs text-blue-400 animate-pulse ml-2">
-                ● Live
-              </span>
-            )}
-            {done && !loading && (
-              <span className="text-xs text-green-400 ml-2">✓ Complete</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {logs.length > 0 && (
-              <span className="text-xs text-neutral-500">
-                {logs.length} lines
-              </span>
-            )}
-            {showTerminal ? (
-              <ChevronDown className="h-4 w-4 text-neutral-400" />
-            ) : (
-              <ChevronUp className="h-4 w-4 text-neutral-400" />
-            )}
-          </div>
-        </button>
+        <DeployForm
+          onDeploy={deploy}
+          loading={loading}
+          isDeploying={isDeploying}
+          state={location.state}
+        />
 
-        {/* Terminal Content */}
-        <div
-          className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            showTerminal ? "max-h-[60vh]" : "max-h-0"
-          }`}
-        >
-          <div className="h-[50vh] overflow-hidden">
-            <LogTerminal logs={logs} done={done} />
+        {/* Terminal Section - Collapsible */}
+        <div className="rounded-xl border border-neutral-800 bg-neutral-900 overflow-hidden shadow-xl">
+          {/* Terminal Toggle Button */}
+          <button
+            onClick={() => setShowTerminal(!showTerminal)}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-neutral-800/80 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <Terminal className="h-4 w-4 text-neutral-400" />
+              <span className="text-xs font-semibold text-neutral-300">
+                {isDeployingLocal ? "Deployment Logs" : "Terminal Logs"}
+              </span>
+              {isDeployingLocal && (
+                <span className="text-xs text-blue-400 animate-pulse ml-2">
+                  ● Live Stream
+                </span>
+              )}
+              {done && !loading && (
+                <span className="text-xs text-emerald-400 ml-2">
+                  ✓ Complete
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {logs.length > 0 && (
+                <span className="text-xs text-neutral-500 font-mono">
+                  {logs.length} lines
+                </span>
+              )}
+              {showTerminal ? (
+                <ChevronDown className="h-4 w-4 text-neutral-400" />
+              ) : (
+                <ChevronUp className="h-4 w-4 text-neutral-400" />
+              )}
+            </div>
+          </button>
+
+          {/* Terminal Content */}
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              showTerminal ? "max-h-[500px]" : "max-h-0"
+            }`}
+          >
+            <div className="h-[400px] overflow-hidden border-t border-neutral-800">
+              <LogTerminal logs={logs} done={done} failed={failed} />
+            </div>
           </div>
         </div>
       </div>

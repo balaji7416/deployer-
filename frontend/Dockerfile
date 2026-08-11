@@ -10,7 +10,13 @@ COPY . .
 
 RUN npm run build
 
+#for development 
 
+# EXPOSE 5173
+
+# CMD ["npm","run","dev","--","--host","0.0.0.0"]
+
+# for production 
 FROM nginx:alpine 
 
 COPY --from=builder /app/dist /usr/share/nginx/html 

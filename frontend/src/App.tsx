@@ -1,9 +1,10 @@
 import { Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import Deployments from "./pages/Deployments";
+import OverviewPage from "./pages/OverviewPage";
+import DeploymentsPage from "./pages/DeploymentsPage";
 import DeployPage from "./pages/DeployPage";
 import AuthPage from "./pages/AuthPage";
-import Deployment from "./pages/Deployment";
+import DeploymentDetailPage from "./pages/DeploymentDetailPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -18,10 +19,11 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/deployments" element={<Deployments />} />
+        <Route path="/" element={<OverviewPage />} />
+        <Route path="/deployments" element={<DeploymentsPage />} />
         <Route path="/deploy" element={<DeployPage />} />
-        <Route path="/deployment/:id" element={<Deployment />} />
+        <Route path="/deployments/:id" element={<DeploymentDetailPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

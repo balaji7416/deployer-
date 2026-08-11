@@ -97,6 +97,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("failed to check auth: ", error);
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      console.log("auth check failed");
       navigate("/auth");
     } finally {
       setAuthChecking(false);
@@ -117,6 +118,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [navigate]);
 
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/auth");
+  };
+
   const value = {
     user,
     setUser,
@@ -128,6 +136,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loginError,
     authChecking,
     checkAuth,
+    logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

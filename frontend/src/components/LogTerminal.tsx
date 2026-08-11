@@ -1,6 +1,14 @@
 import { useEffect, useRef } from "react";
 
-function LogTerminal({ logs, done }: { logs: string[]; done: boolean }) {
+function LogTerminal({
+  logs,
+  done,
+  failed,
+}: {
+  logs: string[];
+  done: boolean;
+  failed: boolean;
+}) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -64,10 +72,22 @@ function LogTerminal({ logs, done }: { logs: string[]; done: boolean }) {
 
         {done && logs.length > 0 && (
           <div className="mt-3 pt-3 border-t border-neutral-800">
-            <div className="flex items-center gap-2 text-green-400">
-              <span>✓</span>
-              <span className="text-sm">Deployment completed successfully</span>
-            </div>
+            {!failed && (
+              <div className="flex items-center gap-2 text-green-400">
+                <span>✓</span>
+                <span className="text-sm">
+                  Deployment completed successfully
+                </span>
+              </div>
+            )}
+            {failed && (
+              <div className="flex items-center gap-2 text-red-400">
+                <span>✗</span>
+                <span className="text-sm">
+                  Deployment failed, check the logs and try again
+                </span>
+              </div>
+            )}
             <div className="text-xs text-neutral-500 mt-1">
               ─── Log stream ended ───
             </div>

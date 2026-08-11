@@ -1,18 +1,7 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useAuth } from "@/context/auth/useAuth";
 import { useNavigate } from "react-router-dom";
+import { Rocket } from "lucide-react";
 
 function AuthPage() {
   const [action, setAction] = useState("login");
@@ -29,8 +18,8 @@ function AuthPage() {
   } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
-    // e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!password) return;
     try {
       if (action === "register") {
@@ -40,96 +29,100 @@ function AuthPage() {
         if (!username) return;
         await login({ username, password });
       }
+      // console.log("success");
       navigate("/");
     } catch {
+      // console.log("error");
       return;
     }
   };
 
   return (
-    <div className="h-screen flex px-2 bg-neutral-900">
-      <div className="w-0 md:flex-1 bg-neutral-800 flex items-center justify-center p-3">
-        <img
-          src="/assets/rocket_image_3.jpg"
-          alt="deployer image"
-          className="object-cover h-full w-full rounded-2xl"
-        />
+    <div className="flex h-screen flex-col bg-black md:flex-row">
+      {/* Left / Top Rocket Banner */}
+      <div className=" flex flex-col items-center justify-center gap-4 px-4 py-8  border-neutral-800 md:h-full md:flex-1 md:border-b-0 md:border-r">
+        <div className="flex items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-indigo-600 text-white shadow-sm">
+          <Rocket className="h-16 w-16 md:h-30 md:w-30" />
+        </div>
+        <h1 className="text-2xl font-bold md:text-4xl">Deployer</h1>
+        <p className="text-xs md:text-sm text-neutral-400">
+          deploying made easy
+        </p>
       </div>
-      <div className="bg-black w-full md:w-[400px] lg:w-[600px] flex flex-col items-center justify-center gap-5">
-        <Card className="w-full max-w-md bg-neutral-900 shadow-md shadow-gray-600">
-          <CardHeader>
-            <CardTitle className="text-gray-200">
-              {action === "login" ? "Login" : "Register"} to your account
-            </CardTitle>
-            <CardDescription>
-              Enter your credentials to {action} to your account
-            </CardDescription>
-            <CardAction>
-              <Button
-                variant="link"
-                className="text-gray-200"
-                onClick={() =>
-                  setAction((prev) => (prev === "login" ? "register" : "login"))
-                }
-              >
-                {action === "login" ? "Register" : "Login"}
-              </Button>
-            </CardAction>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit}>
-              <div className="flex flex-col gap-6 text-gray-300">
-                {action == "register" && (
-                  <div className="grid gap-2 text-gray-300">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="eg. mail@gmail.com"
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                )}
 
-                <div className="grid gap-2 text-gray-300">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder=""
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </div>
+      {/* Right / Form */}
+      <div className="flex flex-1 flex-col items-center md:justify-center gap-5 bg-black px-4 py-8">
+        <div className="w-full max-w-md">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl font-bold text-neutral-100">
+                {action === "login" ? "Login" : "Register"} to your account
+              </h1>
+              <p className="mt-1 text-sm text-neutral-400">
+                Enter your credentials to {action} to your account
+              </p>
+            </div>
+            <button
+              onClick={() =>
+                setAction((prev) => (prev === "login" ? "register" : "login"))
+              }
+              className="shrink-0 text-sm font-medium text-blue-400 hover:text-blue-300"
+            >
+              {action === "login" ? "Register" : "Login"}
+            </button>
+          </div>
 
-                <div className="grid gap-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    {/* <a
-                      href="#"
-                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                    >
-                      Forgot your password?
-                    </a> */}
-                  </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {action == "register" && (
+              <div className="grid gap-2 text-gray-300">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="eg. mail@gmail.com"
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-9 w-full rounded-lg border border-neutral-700 bg-transparent px-3 text-sm text-neutral-100 placeholder:text-neutral-500 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                />
               </div>
-            </form>
-          </CardContent>
-          <CardFooter className="flex-col gap-2 bg-neutral-900 border-t-0">
-            <Button
-              variant="outline"
-              className="w-full"
-              disabled={action === "login" ? loginLoading : registerLoading}
+            )}
+
+            <div className="grid gap-2 text-gray-300">
+              <label htmlFor="username" className="text-sm font-medium">
+                Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                placeholder=""
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="h-9 w-full rounded-lg border border-neutral-700 bg-transparent px-3 text-sm text-neutral-100 placeholder:text-neutral-500 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-gray-300"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="h-9 w-full rounded-lg border border-neutral-700 bg-transparent px-3 text-sm text-neutral-100 placeholder:text-neutral-500 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+              />
+            </div>
+
+            <button
               type="submit"
-              onClick={handleSubmit}
+              disabled={action === "login" ? loginLoading : registerLoading}
+              className="mt-2 h-9 w-full rounded-lg bg-blue-600 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {action === "login"
                 ? loginLoading
@@ -138,13 +131,14 @@ function AuthPage() {
                 : registerLoading
                   ? "Registering..."
                   : "Register"}
-            </Button>
-          </CardFooter>
-        </Card>
-        {/*error messages*/}
-        <div className="flex flex-col gap-2 text-red-500 font-mono">
-          {action === "login" && loginError && <p>{loginError}</p>}
-          {action === "register" && registerError && <p>{registerError}</p>}
+            </button>
+          </form>
+
+          {/*error messages*/}
+          <div className="mt-4 flex flex-col items-center justify-center gap-2 font-mono text-red-500">
+            {action === "login" && loginError && <p>{loginError}</p>}
+            {action === "register" && registerError && <p>{registerError}</p>}
+          </div>
         </div>
       </div>
     </div>
